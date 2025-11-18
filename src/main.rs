@@ -33,7 +33,7 @@ use crate::{
     },
 };
 
-fn fk_par() -> Result<()> {
+fn fk() -> Result<()> {
     const DOF: usize = 7;
 
     let joint_bounds = panda_get_bounds();
@@ -91,7 +91,7 @@ fn fk_par() -> Result<()> {
 }
 
 #[allow(dead_code)]
-fn rnea_deriv_par() -> Result<()> {
+fn rnea_deriv() -> Result<()> {
     const DOF: usize = 4;
 
     let joint_bounds = roarm_m2_get_bounds();
@@ -133,7 +133,7 @@ fn rnea_deriv_par() -> Result<()> {
 }
 
 #[allow(dead_code)]
-fn rnea_deriv_par_7dof() -> Result<()> {
+fn rnea_deriv_7dof() -> Result<()> {
     const DOF: usize = 7;
 
     let v_ranges = vec![(Real::from_f64(-0.5), Real::from_f64(0.5)); DOF];
@@ -172,10 +172,12 @@ fn rnea_deriv_par_7dof() -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    //fk_par()?;
-    //rnea_deriv_par()?;
-    //rnea_deriv_par_7dof();
+    fk()?;
+    //rnea_deriv()?;
+    //rnea_deriv7dof();
 
+
+    /*
     let input_range: (Real, Real) = (Real::from_f64(0.0), Real::from_f64(1.0));
     let default_val = 0.5;
     let x = &get_program().add_input_scalar("x", input_range, default_val);
@@ -191,7 +193,7 @@ fn main() -> Result<()> {
 
     // If you want, you can check the output values in rust
     assert!(res.value.to_f64() == default_val.powi(3));
-
+    */
 
 
     Ok(())

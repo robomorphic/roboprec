@@ -6,6 +6,9 @@ use anyhow::{Context, Result};
 use indexmap::map::Entry;
 use indexmap::IndexMap;
 
+use crate::analysis::real::Integer;
+use crate::ir::precision::Precision;
+
 /// Inclusive range bounds reported by Daisy.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DaisyRange {
@@ -15,6 +18,7 @@ pub struct DaisyRange {
 
 pub type DaisyRanges = IndexMap<String, DaisyRange>;
 pub type DaisyErrors = IndexMap<String, f64>;
+pub type DaisyPrecisions = IndexMap<String, Precision>;
 
 /// Parse Daisy range analysis output (e.g. `daisy/ranges.txt`) into a map.
 pub fn parse_daisy_ranges<P: AsRef<Path>>(path: P) -> Result<DaisyRanges> {
@@ -154,6 +158,89 @@ pub fn parse_daisy_errors<P: AsRef<Path>>(path: P) -> Result<DaisyErrors> {
     Ok(errors)
 }
 
+pub fn parse_daisy_precisions<P: AsRef<Path>>(path: P, range_results: &DaisyRanges) -> Result<DaisyPrecisions> {
+    let file = File::open(&path).with_context(|| {
+        format!("Failed to open Daisy precisions file at {}", path.as_ref().display())
+    })?;
+    let reader = BufReader::new(file);
+
+    let mut precisions = DaisyPrecisions::new();
+
+    // Every Line is like: "id": Precision, Precision is either Fixed{num}, Float32, Float64
+    for (idx, line) in reader.lines().enumerate() {
+        let line = line.with_context(|| {
+            format!("Failed to read line {} of Daisy precisions file", idx + 1)
+        })?;
+        let trimmed = line.trim();
+        if trimmed.is_empty() {
+            continue;
+        }
+
+        let (identifier, value) = trimmed.split_once(':').with_context(|| {
+            format!(
+                "Malformed line {} in Daisy precisions file: missing ':' separator",
+                idx + 1
+            )
+        })?;
+
+        let identifier = identifier.trim().to_string();
+        let value = value.trim();
+
+        let precision = if value.starts_with("Fixed") {
+            let bits_str = value
+                .strip_prefix("Fixed")
+                .with_context(|| {
+                    format!(
+                        "Malformed line {} in Daisy precisions file: expected 'Fixed{{total}}'",
+                        idx + 1
+                    )
+                })?;
+            let total_bits = bits_str
+                .parse::<i32>()
+                .with_context(|| {
+                    format!(
+                        "Malformed line {} in Daisy precisions file: missing total bits",
+                        idx + 1
+                    )
+                })?;
+            
+            // first, get the absolute max of ranges
+            let range = range_results.get(&identifier).with_context(|| {
+                format!(
+                    "Daisy precisions file line {} references unknown identifier '{}'",
+                    idx + 1,
+                    identifier
+                )
+            })?;
+            let abs_max = range.lower.abs().max(range.upper.abs());
+            let abs_max = abs_max.floor() as u32;
+            // convert it to rug Integer
+            // TODO: get rid of rug dependency later
+            let abs_max = Integer::from_u32(abs_max);
+            let integer_bits = if abs_max.is_zero() {
+                1
+            } else {
+                abs_max.bits() as i32 + 1
+            };
+
+            Precision::Fixed { total_bits, fractional_bits: total_bits - integer_bits }
+        } else if value == "Float32" {
+            Precision::Float32
+        } else if value == "Float64" {
+            Precision::Float64
+        } else {
+            anyhow::bail!(
+                "Malformed line {} in Daisy precisions file: unknown precision '{}'",
+                idx + 1,
+                value
+            );
+        };
+        precisions.insert(identifier, precision);
+    }
+
+    Ok(precisions)
+}
+
 pub fn write_ranges_to_file<P: AsRef<Path>>(ranges: &DaisyRanges, path: P) -> Result<()> {
     let mut file = File::create(&path).with_context(|| {
         format!(
@@ -188,6 +275,32 @@ pub fn write_errors_to_file<P: AsRef<Path>>(errors: &DaisyErrors, path: P) -> Re
         writeln!(file, "{}: {}", identifier, error).with_context(|| {
             format!(
                 "Failed to write to Daisy errors output file at {}",
+                path.as_ref().display()
+            )
+        })?;
+    }
+
+    Ok(())
+}
+
+pub fn write_precisions_to_file<P: AsRef<Path>>(precisions: &DaisyPrecisions, path: P) -> Result<()> {
+    let mut file = File::create(&path).with_context(|| {
+        format!(
+            "Failed to create Daisy precisions output file at {}",
+            path.as_ref().display()
+        )
+    })?;
+
+    use std::io::Write;
+    for (identifier, precision) in precisions {
+        let precision_str = match precision {
+            Precision::Fixed { total_bits, fractional_bits } => format!("Fixed{{{}, {}}}", total_bits, fractional_bits),
+            Precision::Float32 => "Float32".to_string(),
+            Precision::Float64 => "Float64".to_string(),
+        };
+        writeln!(file, "{}: {}", identifier, precision_str).with_context(|| {
+            format!(
+                "Failed to write to Daisy precisions output file at {}",
                 path.as_ref().display()
             )
         })?;

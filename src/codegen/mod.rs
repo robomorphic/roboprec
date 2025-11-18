@@ -1,2 +1,2 @@
-pub mod codegen;
-mod daisy_dsl;
+pub mod daisy_dsl;
+pub mod c;

@@ -3,6 +3,7 @@ use std::ops::{Add, AddAssign, BitAnd, Div, DivAssign, Mul, MulAssign, Neg, Sub,
 use rug::Integer as RugInteger;
 use rug::Rational;
 
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Integer {
     value: RugInteger,
 }
@@ -10,6 +11,12 @@ pub struct Integer {
 impl Integer {
     pub fn to_i64(&self) -> i64 {
         self.value.to_i64().unwrap()
+    }
+
+    pub fn from_u32(n: u32) -> Self {
+        Self {
+            value: RugInteger::from(n),
+        }
     }
 
     pub fn one() -> Self {

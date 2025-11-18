@@ -2,7 +2,10 @@ use anyhow::Result;
 use log::info;
 
 use crate::{
-    analysis::daisy::{write_errors_to_file, write_ranges_to_file}, codegen::codegen::generate_code, config::CONFIG, ir::{
+    analysis::daisy::{write_errors_to_file, write_precisions_to_file, write_ranges_to_file},
+    codegen::{c::generate_c, daisy_dsl::generate_daisy_dsl}, 
+    config::CONFIG, 
+    ir::{
         program::{Program, get_program, report_analysis_errors, report_analysis_ranges, report_worst_values, update_program_outputs},
         unroll::unroll_ir,
     }, logger::setup_logger
@@ -25,8 +28,11 @@ pub fn analysis_main() -> Result<Program> {
     let mut program = unroll_ir(&get_program());
 
     println!("Starting worst case analysis...");
+    // create folder if not exist
+    let folder = CONFIG.read().unwrap().codegen_dir.clone();
+    std::fs::create_dir_all(folder).unwrap();
     // TODO: call daisy here
-    match generate_code(&program) {
+    match generate_daisy_dsl(&program) {
         Ok(_) => (),
         Err(e) => anyhow::bail!("Code generation failed: {}", e),
     }
@@ -37,6 +43,7 @@ pub fn analysis_main() -> Result<Program> {
     // Run "rm daisy_directory + "ranges.txt" to remove previous results
     std::fs::remove_file(format!("{}ranges.txt", daisy_directory)).ok();
     std::fs::remove_file(format!("{}errors.txt", daisy_directory)).ok();
+    std::fs::remove_file(format!("{}precisions.txt", daisy_directory)).ok();
 
     // Then, we run
     // os.system(f"cd ../daisy && ./daisy --codegen --lang=C --precision={precision} --rangeMethod=interval --errorMethod=interval ../quanta/{file_path}")
@@ -60,6 +67,7 @@ pub fn analysis_main() -> Result<Program> {
         .args([
             "--codegen",
             "--lang=C", // TODO: add ap_fixed option
+            "--apfixed",
             "--precision=Fixed32", // TODO: make this dynamic
             "--rangeMethod=interval",
             "--errorMethod=interval",
@@ -77,6 +85,11 @@ pub fn analysis_main() -> Result<Program> {
         crate::analysis::daisy::parse_daisy_ranges(daisy_directory.join("ranges.txt"))?;
     let error_results =
         crate::analysis::daisy::parse_daisy_errors(daisy_directory.join("errors.txt"))?;
+    let precision_results =
+        crate::analysis::daisy::parse_daisy_precisions(daisy_directory.join("precisions.txt"), &range_results)?;
+    
+    // after getting results, we can generate C now!
+    generate_c(&program, &precision_results)?;
 
     
     update_program_outputs(
@@ -92,19 +105,25 @@ pub fn analysis_main() -> Result<Program> {
 
     // Finally, we copy the codegen to our output directory and log the new file path to user
     // from daisy_directory + "output" + scala_file.name() to config.output_dir + scala_file.name()
-    let input_file = daisy_directory.join("output").join("codegen.c"); // TODO: make this dynamic
-    let output_dir = manifest_dir.join("output");
-    let output_file = output_dir.join("codegen.c"); // TODO: make this dynamic
+    let input_file = daisy_directory.join("output").join("codegen.cpp"); // TODO: make this dynamic
+    let output_dir = manifest_dir.join("output/codegen/apfixed/");
+    // generate output directory if not exist
+    std::fs::create_dir_all(&output_dir)?;
+    let output_file = output_dir.join("codegen.cpp"); // TODO: make this dynamic
     std::fs::copy(
         input_file,
         &output_file,
     )?;
 
+    let output_dir = manifest_dir.join("output/analysis_data/");
+    std::fs::create_dir_all(&output_dir)?;
     // Write all ranges and all errors in output directory, too
     let ranges_output_file = output_dir.join("analysis_ranges.txt");
     let errors_output_file = output_dir.join("analysis_errors.txt");
+    let precisions_output_file = output_dir.join("analysis_precisions.txt");
     write_ranges_to_file(&range_results, &ranges_output_file)?;
     write_errors_to_file(&error_results, &errors_output_file)?;
+    write_precisions_to_file(&precision_results, &precisions_output_file)?;
     
     let duration = start_time.elapsed();
     println!("Total analysis time: {:?}", duration);
@@ -112,6 +131,7 @@ pub fn analysis_main() -> Result<Program> {
     println!("Codegen output saved in {}", output_file.display());
     println!("Analysis ranges saved in {}", ranges_output_file.display());
     println!("Analysis errors saved in {}", errors_output_file.display());
+    println!("Analysis precisions saved in {}", precisions_output_file.display());
 
     Ok(program)
 }
