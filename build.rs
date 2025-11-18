@@ -2,7 +2,7 @@ use std::path::Path;
 use std::process::{Command};
 
 fn log(message: &str) {
-    println!("cargo::warning={message}");
+    println!("cargo:warning={message}");
 }
 
 fn main() {
@@ -16,7 +16,7 @@ fn main() {
 
     // 3. Check if sbt is installed
     if Command::new("sbt").arg("--version").output().is_err() {
-        log("cargo::warning=sbt not found, installing sbt and dependencies...");
+        log("cargo:warning=sbt not found, installing sbt and dependencies...");
         
         // Update package list
         log("Running: sudo apt-get update");
@@ -92,11 +92,11 @@ fn main() {
             .status()
             .expect("Failed to install sbt");
         
-        log("cargo::warning=sbt and dependencies installed successfully");
+        log("cargo:warning=sbt and dependencies installed successfully");
     }
 
     // 4. Build Daisy project
-    log("cargo::warning=Building Daisy Scala project...");
+    log("cargo:warning=Building Daisy Scala project...");
     
     log("Running: sbt update (in daisy directory)");
     let sbt_update = Command::new("sbt")
@@ -137,7 +137,7 @@ fn main() {
         panic!("'sbt script' failed in daisy directory");
     }
 
-    log("cargo::warning=Daisy build completed successfully");
+    log("cargo:warning=Daisy build completed successfully");
 
 }
 
