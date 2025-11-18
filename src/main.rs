@@ -29,7 +29,7 @@ use crate::{
     helpers::{cos_extremes, sin_extremes},
     ir::{
         helper::clear_all_names,
-        program::{clear_program, get_program, register_matrix_output, register_vector_output},
+        program::{clear_program, get_program, register_matrix_output, register_scalar_output, register_vector_output},
     },
 };
 
@@ -56,11 +56,11 @@ fn fk_par() -> Result<()> {
         .collect::<Vec<(Real, Real)>>();
 
     let qsin =
-        get_program().add_input_vector("qsin".to_string(), minmax_sin.clone(), vec![0.0; DOF]);
+        get_program().add_input_vector("qsin", minmax_sin.clone(), vec![0.0; DOF]);
     let qcos =
-        get_program().add_input_vector("qcos".to_string(), minmax_cos.clone(), vec![0.0; DOF]);
-    let v = get_program().add_input_vector("v".to_string(), v_ranges.clone(), vec![0.0; DOF]);
-    let a = get_program().add_input_vector("a".to_string(), a_ranges.clone(), vec![0.0; DOF]);
+        get_program().add_input_vector("qcos", minmax_cos.clone(), vec![0.0; DOF]);
+    let v = get_program().add_input_vector("v", v_ranges.clone(), vec![0.0; DOF]);
+    let a = get_program().add_input_vector("a", a_ranges.clone(), vec![0.0; DOF]);
 
     let result = forward_kinematics(qcos, qsin, v, a, &panda());
 
@@ -71,18 +71,18 @@ fn fk_par() -> Result<()> {
         mut all_a,
     } = result;
     omi_translations.iter_mut().enumerate().for_each(|(i, t)| {
-        register_vector_output(t, format!("omi_translation_{}", i));
+        register_vector_output(t, &format!("omi_translation_{}", i));
     });
     omi_rotations.iter_mut().enumerate().for_each(|(i, r)| {
-        register_matrix_output(r, format!("omi_rotation_{}", i));
+        register_matrix_output(r, &format!("omi_rotation_{}", i));
     });
 
     all_v.iter_mut().enumerate().for_each(|(i, v)| {
-        register_vector_output(v, format!("all_v_{}", i));
+        register_vector_output(v, &format!("all_v_{}", i));
     });
 
     all_a.iter_mut().enumerate().for_each(|(i, a)| {
-        register_vector_output(a, format!("all_a_{}", i));
+        register_vector_output(a, &format!("all_a_{}", i));
     });
 
     analysis_main().with_context(|| "Failed to analyze program")?;
@@ -114,18 +114,18 @@ fn rnea_deriv_par() -> Result<()> {
         .collect::<Vec<(Real, Real)>>();
 
     let qsin =
-        get_program().add_input_vector("qsin".to_string(), minmax_sin.clone(), vec![0.0; DOF]);
+        get_program().add_input_vector("qsin", minmax_sin.clone(), vec![0.0; DOF]);
     let qcos =
-        get_program().add_input_vector("qcos".to_string(), minmax_cos.clone(), vec![0.0; DOF]);
-    let v = get_program().add_input_vector("v".to_string(), v_ranges.clone(), vec![0.0; DOF]);
-    let a = get_program().add_input_vector("a".to_string(), a_ranges.clone(), vec![0.0; DOF]);
+        get_program().add_input_vector("qcos", minmax_cos.clone(), vec![0.0; DOF]);
+    let v = get_program().add_input_vector("v", v_ranges.clone(), vec![0.0; DOF]);
+    let a = get_program().add_input_vector("a", a_ranges.clone(), vec![0.0; DOF]);
 
     let result = rneaderivatives(qcos, qsin, v, a, &roarm_m2());
 
     let (mut rnea_partial_da, mut rnea_partial_dv, mut rnea_partial_dq, _) = result;
-    register_matrix_output(&mut rnea_partial_da, "rnea_partial_da".to_string());
-    register_matrix_output(&mut rnea_partial_dv, "rnea_partial_dv".to_string());
-    register_matrix_output(&mut rnea_partial_dq, "rnea_partial_dq".to_string());
+    register_matrix_output(&mut rnea_partial_da, "rnea_partial_da");
+    register_matrix_output(&mut rnea_partial_dv, "rnea_partial_dv");
+    register_matrix_output(&mut rnea_partial_dq, "rnea_partial_dq");
 
     analysis_main().with_context(|| "Failed to analyze program")?;
 
@@ -156,11 +156,11 @@ fn rnea_deriv_par_7dof() -> Result<()> {
         .collect::<Vec<(Real, Real)>>();
 
     let qsin =
-        get_program().add_input_vector("qsin".to_string(), minmax_sin.clone(), vec![0.0; DOF]);
+        get_program().add_input_vector("qsin", minmax_sin.clone(), vec![0.0; DOF]);
     let qcos =
-        get_program().add_input_vector("qcos".to_string(), minmax_cos.clone(), vec![0.0; DOF]);
-    let v = get_program().add_input_vector("v".to_string(), v_ranges.clone(), vec![0.0; DOF]);
-    let a = get_program().add_input_vector("a".to_string(), a_ranges.clone(), vec![0.0; DOF]);
+        get_program().add_input_vector("qcos", minmax_cos.clone(), vec![0.0; DOF]);
+    let v = get_program().add_input_vector("v", v_ranges.clone(), vec![0.0; DOF]);
+    let a = get_program().add_input_vector("a", a_ranges.clone(), vec![0.0; DOF]);
 
     let result = rneaderivatives(qcos, qsin, v, a, &panda());
 
@@ -172,10 +172,27 @@ fn rnea_deriv_par_7dof() -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    clear_all_names();
-    clear_program();
-    fk_par()?;
+    //fk_par()?;
     //rnea_deriv_par()?;
     //rnea_deriv_par_7dof();
+
+    let input_range: (Real, Real) = (Real::from_f64(0.0), Real::from_f64(1.0));
+    let default_val = 0.5;
+    let x = &get_program().add_input_scalar("x", input_range, default_val);
+
+    // Do operation
+    let mut res = x * x * x;
+
+    // Register output
+    register_scalar_output(&mut res, "output");
+
+    // Do the analysis
+    analysis_main()?;
+
+    // If you want, you can check the output values in rust
+    assert!(res.value.to_f64() == default_val.powi(3));
+
+
+
     Ok(())
 }

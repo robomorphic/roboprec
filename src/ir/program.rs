@@ -43,8 +43,8 @@ pub struct Program {
     body: Vec<Expr>,
 }
 
-pub fn register_scalar_output(output: &mut Scalar, name: String) {
-    *output = output.define(name);
+pub fn register_scalar_output(output: &mut Scalar, name: &str) {
+    *output = output.define(name.to_string());
     get_program().outputs.insert(
         output.id.clone(),
         ProgramOutput::Scalar {
@@ -58,8 +58,8 @@ pub fn register_scalar_output(output: &mut Scalar, name: String) {
     );
 }
 
-pub fn register_vector_output(output: &mut Vector, name: String) {
-    *output = output.define(name);
+pub fn register_vector_output(output: &mut Vector, name: &str) {
+    *output = output.define(name.to_string());
     get_program().outputs.insert(
         output.id.clone(),
         ProgramOutput::Vector {
@@ -77,8 +77,8 @@ pub fn register_vector_output(output: &mut Vector, name: String) {
     );
 }
 
-pub fn register_matrix_output(output: &mut Matrix, name: String) {
-    *output = output.define(name);
+pub fn register_matrix_output(output: &mut Matrix, name: &str) {
+    *output = output.define(name.to_string());
     get_program().outputs.insert(
         output.id.clone(),
         ProgramOutput::Matrix {
@@ -112,7 +112,7 @@ impl Program {
 
     pub fn add_input_scalar(
         &mut self,
-        name: String,
+        name: &str,
         range: (Real, Real),
         default_value: f64,
     ) -> Scalar {
@@ -129,7 +129,7 @@ impl Program {
 
     pub fn add_input_vector(
         &mut self,
-        name: String,
+        name: &str,
         range: Vec<(Real, Real)>,
         default_value: Vec<f64>,
     ) -> Vector {
@@ -148,7 +148,7 @@ impl Program {
 
     pub fn add_input_matrix(
         &mut self,
-        name: String,
+        name: &str,
         range: Vec<Vec<(Real, Real)>>,
         default_value: Vec<Vec<f64>>,
     ) -> Matrix {
