@@ -3,7 +3,7 @@ use log::info;
 
 use crate::{
     analysis::daisy::{write_errors_to_file, write_precisions_to_file, write_ranges_to_file},
-    codegen::{c::generate_c, daisy_dsl::generate_daisy_dsl}, 
+    codegen::{c::generate_c, c_with_conversion::generate_c_with_conversion, daisy_dsl::generate_daisy_dsl}, 
     config::CONFIG, 
     ir::{
         program::{Program, get_program, report_analysis_errors, report_analysis_ranges, report_worst_values, update_program_outputs},
@@ -90,7 +90,7 @@ pub fn analysis_main() -> Result<Program> {
     
     // after getting results, we can generate C now!
     generate_c(&program, &precision_results)?;
-
+    generate_c_with_conversion(&program, &precision_results)?;
     
     update_program_outputs(
         &mut program,

@@ -5,6 +5,7 @@ use log::error;
 use log::info;
 use std::io::Write;
 
+use crate::ir::precision;
 use crate::{
     analysis::real::Real,
     config::CONFIG,
@@ -82,7 +83,7 @@ fn value_precision_to_str(value: &Real, precision: &Precision) -> String {
     }
 }
 
-pub fn generate_c(program: &Program, precisions: &IndexMap<String, Precision>) -> Result<()> {
+pub fn generate_c_with_conversion(program: &Program, precisions: &IndexMap<String, Precision>) -> Result<()> {
     info!("Generating C code...");
     // create a string for the file, so we can write to it at once
     let inputs = program.get_inputs();
@@ -102,16 +103,9 @@ pub fn generate_c(program: &Program, precisions: &IndexMap<String, Precision>) -
         match output {
             ProgramOutput::Scalar { info } => {
                 let name = id.name();
-                let precision = precisions.get(&name.clone()).ok_or_else(|| {
-                    anyhow::anyhow!(
-                        "Precision for output variable {} not found in precisions map",
-                        name
-                    )
-                })?;
                 generated_code.push_str(
                     format!(
-                        "    {} {};\n",
-                        precision_to_type(&precision),
+                        "    double {};\n",
                         id.name() // in this case we use id.name, in the function body we'll use info.id.name
                     )
                     .as_str(),
@@ -120,16 +114,9 @@ pub fn generate_c(program: &Program, precisions: &IndexMap<String, Precision>) -
             ProgramOutput::Vector { info: infos } => {
                 for (i, info) in infos.iter().enumerate() {
                     let name = info.id.name();
-                    let precision = precisions.get(&name.clone()).ok_or_else(|| {
-                        anyhow::anyhow!(
-                            "Precision for output variable {} not found in precisions map",
-                            name
-                        )
-                    })?;
                     generated_code.push_str(
                         format!(
-                            "    {} {}_{};\n",
-                            precision_to_type(&precision),
+                            "    double {}_{};\n",
                             id.name(),
                             i
                         )
@@ -141,16 +128,9 @@ pub fn generate_c(program: &Program, precisions: &IndexMap<String, Precision>) -
                 for (i, row) in infos.iter().enumerate() {
                     for (j, info) in row.iter().enumerate() {
                         let name = info.id.name();
-                        let precision = precisions.get(&name.clone()).ok_or_else(|| {
-                            anyhow::anyhow!(
-                                "Precision for output variable {} not found in precisions map",
-                                name
-                            )
-                        })?;
                         generated_code.push_str(
                             format!(
-                                "    {} {}_{}_{};\n",
-                                precision_to_type(&precision),
+                                "    double {}_{}_{};\n",
                                 id.name(),
                                 i,
                                 j
@@ -167,6 +147,7 @@ pub fn generate_c(program: &Program, precisions: &IndexMap<String, Precision>) -
     // then print the function signature
     generated_code.push_str(format!("\n{}_output_t {}(\n", func_name, func_name).as_str());
 
+    let mut input_conversion_str = String::new();
     for (i, (id, input)) in inputs.iter().enumerate() {
         match input {
             ProgramInput::Scalar { info } => {
@@ -178,10 +159,39 @@ pub fn generate_c(program: &Program, precisions: &IndexMap<String, Precision>) -
                     )
                 })?;
                 generated_code.push_str(
-                    format!("    {} {}", precision_to_type(&precision), id.name()).as_str(),
+                    format!("    double _double_{}", id.name()).as_str(),
                 );
                 if i != inputs.len() - 1 {
                     generated_code.push_str(",\n");
+                }
+
+                // now add conversion from double to fixed
+                match precision {
+                    Precision::Fixed{ total_bits: _, fractional_bits } => {
+                        input_conversion_str.push_str(
+                            format!(
+                                "    {} {} = ({})(_double_{} * (1 << {}));\n",
+                                precision_to_type(precision),
+                                id.name(),
+                                precision_to_type(precision),
+                                id.name(),
+                                fractional_bits
+                            )
+                            .as_str(),
+                        );
+                    }
+                    Precision::Float32 | Precision::Float64 => {
+                        input_conversion_str.push_str(
+                            format!(
+                                "    {} {} = ({})_double_{};\n",
+                                precision_to_type(precision),
+                                id.name(),
+                                precision_to_type(precision),
+                                id.name()
+                            )
+                            .as_str(),
+                        );
+                    }
                 }
             }
             ProgramInput::Vector { .. } | ProgramInput::Matrix { .. } => {
@@ -190,6 +200,8 @@ pub fn generate_c(program: &Program, precisions: &IndexMap<String, Precision>) -
         }
     }
     generated_code.push_str("\n) {\n");
+
+    generated_code.push_str(&input_conversion_str);
 
     // now write the body
     for expr in body {
@@ -503,29 +515,116 @@ pub fn generate_c(program: &Program, precisions: &IndexMap<String, Precision>) -
         };
     }
 
+    // before the return statement, 
     // now, print the return statement
     // it is a struct containing all the outputs
     generated_code.push_str("\n    return {\n");
     for (_, output) in outputs {
         match output {
             ProgramOutput::Scalar { info } => {
-                generated_code.push_str(
-                    format!(
-                        "        {},\n",
-                        info.id.name() // in this case we use id.name, in the function body we'll use info.id.name
+                let name = info.id.name();
+                let precision = precisions.get(&name.clone()).ok_or_else(|| {
+                    anyhow::anyhow!(
+                        "Precision for output variable {} not found in precisions map",
+                        name
                     )
-                    .as_str(),
-                );
+                })?;
+                match precision {
+                    Precision::Fixed {
+                        total_bits: _,
+                        fractional_bits,
+                    } => {
+                        generated_code.push_str(
+                            format!(
+                                "        ((double){}) / (1 << {}),\n",
+                                info.id.name(), // in this case we use id.name, in the function body we'll use info.id.name
+                                fractional_bits
+                            )
+                            .as_str(),
+                        );
+                    }
+                    Precision::Float32 | Precision::Float64 => {
+                        generated_code.push_str(
+                            format!(
+                                "        {},\n",
+                                info.id.name(), // in this case we use id.name, in the function body we'll use info.id.name
+                            )
+                            .as_str(),
+                        );
+                    }
+                }
             }
             ProgramOutput::Vector { info: infos } => {
                 for info in infos.iter() {
-                    generated_code.push_str(format!("        {},\n", info.id.name()).as_str());
+                    //generated_code.push_str(format!("        {},\n", info.id.name()).as_str());
+                    let name = info.id.name();
+                    let precision = precisions.get(&name.clone()).ok_or_else(|| {
+                        anyhow::anyhow!(
+                            "Precision for output variable {} not found in precisions map",
+                            name
+                        )
+                    })?;
+                        match precision {
+                        Precision::Fixed {
+                            total_bits: _,
+                            fractional_bits,
+                        } => {
+                            generated_code.push_str(
+                                format!(
+                                    "        ((double){}) / (1 << {}),\n",
+                                    info.id.name(), // in this case we use id.name, in the function body we'll use info.id.name
+                                    fractional_bits
+                                )
+                                .as_str(),
+                            );
+                        }
+                        Precision::Float32 | Precision::Float64 => {
+                            generated_code.push_str(
+                                format!(
+                                    "        {},\n",
+                                    info.id.name(), // in this case we use id.name, in the function body we'll use info.id.name
+                                )
+                                .as_str(),
+                            );
+                        }
+                    }
                 }
             }
             ProgramOutput::Matrix { info: infos } => {
                 for row in infos.iter() {
                     for info in row.iter() {
-                        generated_code.push_str(format!("        {},\n", info.id.name()).as_str());
+                        //generated_code.push_str(format!("        {},\n", info.id.name()).as_str());
+                        let name = info.id.name();
+                        let precision = precisions.get(&name.clone()).ok_or_else(|| {
+                            anyhow::anyhow!(
+                                "Precision for output variable {} not found in precisions map",
+                                name
+                            )
+                        })?;
+                        match precision {
+                            Precision::Fixed {
+                                total_bits: _,
+                                fractional_bits,
+                            } => {
+                                generated_code.push_str(
+                                    format!(
+                                        "        ((double){}) / (1 << {}),\n",
+                                        info.id.name(), // in this case we use id.name, in the function body we'll use info.id.name
+                                        fractional_bits
+                                    )
+                                    .as_str(),
+                                );
+                            }
+                            Precision::Float32 | Precision::Float64 => {
+                                generated_code.push_str(
+                                    format!(
+                                        "        {},\n",
+                                        info.id.name(), // in this case we use id.name, in the function body we'll use info.id.name
+                                    )
+                                    .as_str(),
+                                );
+                            }
+                        }
                     }
                 }
             }
@@ -537,7 +636,7 @@ pub fn generate_c(program: &Program, precisions: &IndexMap<String, Precision>) -
 
     let folder = format!("{}/C", config.codegen_dir);
     std::fs::create_dir_all(&folder).expect("Failed to create codegen directory for C");
-    let filename = format!("{}/{}.cpp", folder, config.codegen_filename);
+    let filename = format!("{}/{}_with_conversion.cpp", folder, config.codegen_filename);
     let mut file = match std::fs::File::create(filename.clone()) {
         Ok(f) => f,
         Err(e) => anyhow::bail!("Unable to create file {}: {}", filename, e),

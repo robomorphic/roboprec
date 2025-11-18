@@ -15,10 +15,23 @@ pub fn clear_all_names() {
 
 /// Generates a unique variable name given a prefix.
 fn generate_name_if_needed(prefix: &str, names: &HashSet<String>) -> String {
-    if !names.contains(prefix) {
-        return prefix.to_string();
-    }
+    // remove all preceding '_' characters
+    let prefix = prefix.trim_start_matches('_');
+    // if the prefix is too long, cut it down to a reasonable length
+    let max_length = 40;
     let mut counter = TEMP_VAR_COUNTER.lock().unwrap();
+
+    let prefix = if prefix.len() > max_length {
+        *counter += 1;
+        format!("var_{}", *counter)
+    } else {
+        prefix.to_string()
+    };
+
+    if !names.contains(&prefix) {
+        return prefix;
+    }
+    
     *counter += 1;
     if prefix.is_empty() {
         format!("r_{}", *counter)
