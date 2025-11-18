@@ -1,0 +1,3 @@
+[submodule "daisy"]
+	path = daisy
+	url = https://github.com/robomorphic/daisy
