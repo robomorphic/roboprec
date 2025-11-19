@@ -112,7 +112,7 @@ pub fn generate_c_with_conversion(
                 );
             }
             ProgramOutput::Vector { info: infos } => {
-                for (i, info) in infos.iter().enumerate() {
+                for (i, _) in infos.iter().enumerate() {
                     generated_code.push_str(
                         format!(
                             "    double {}_{};\n",
@@ -125,7 +125,7 @@ pub fn generate_c_with_conversion(
             }
             ProgramOutput::Matrix { info: infos } => {
                 for (i, row) in infos.iter().enumerate() {
-                    for (j, info) in row.iter().enumerate() {
+                    for (j, _) in row.iter().enumerate() {
                         generated_code.push_str(
                             format!(
                                 "    double {}_{}_{};\n",

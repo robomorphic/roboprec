@@ -35,6 +35,7 @@ pub fn analysis(config: Config) -> Result<Program> {
         Ok(_) => (),
         Err(e) => anyhow::bail!("Code generation failed: {}", e),
     }
+    info!("Daisy DSL code generated successfully.");
 
     // Then, we run daisy with the generated code
     // TODO: Have a proper way to specify daisy path
@@ -43,6 +44,7 @@ pub fn analysis(config: Config) -> Result<Program> {
     std::fs::remove_file(format!("{}ranges.txt", daisy_directory)).ok();
     std::fs::remove_file(format!("{}errors.txt", daisy_directory)).ok();
     std::fs::remove_file(format!("{}precisions.txt", daisy_directory)).ok();
+    info!("Removed previous Daisy analysis files.");
 
     // Then, we run
     // os.system(f"cd ../daisy && ./daisy --codegen --lang=C --precision={precision} --rangeMethod=interval --errorMethod=interval ../quanta/{file_path}")
@@ -54,13 +56,15 @@ pub fn analysis(config: Config) -> Result<Program> {
     let daisy_binary = daisy_directory.join("daisy");
 
     let scala_file = config.codegen_dir
-        .join("daisy")
+        .join("codegen/daisy")
         .join(format!("{}.scala", config.codegen_filename));
     let scala_file = std::fs::canonicalize(scala_file)?;
 
     // before running, run mkdir daisy_directory + "output"
     std::fs::create_dir_all(daisy_directory.join("output"))?;
 
+
+    info!("Running Daisy...");
     let daisy_status = std::process::Command::new(&daisy_binary)
         .current_dir(&daisy_directory)
         .args([
@@ -81,6 +85,7 @@ pub fn analysis(config: Config) -> Result<Program> {
     if !daisy_status.success() {
         anyhow::bail!("Daisy analysis failed");
     }
+    info!("Daisy analysis completed successfully");
 
     let range_results =
         crate::analysis::daisy::parse_daisy_ranges(daisy_directory.join("ranges.txt"))?;

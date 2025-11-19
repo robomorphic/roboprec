@@ -171,7 +171,7 @@ pub fn generate_daisy_dsl(program: &Program, config: &Config) -> Result<()> {
     generated_code.push_str("}}}\n");
 
     // Create directory and write to file
-    let folder = config.codegen_dir.join("daisy");
+    let folder = config.codegen_dir.join("codegen/daisy");
     std::fs::create_dir_all(&folder).expect("Failed to create codegen directory for Daisy DSL");
     let filename = folder.join(format!("{}.scala", config.codegen_filename));
 
