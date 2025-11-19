@@ -4,6 +4,7 @@ use log::info;
 use crate::{
     analysis::daisy::{write_errors_to_file, write_precisions_to_file, write_ranges_to_file},
     codegen::{c::generate_c, c_with_conversion::generate_c_with_conversion, daisy_dsl::generate_daisy_dsl}, 
+    config::Config,
     ir::{
         precision::Precision,
         program::{Program, get_program, report_analysis_errors, report_analysis_ranges, report_worst_values, update_program_outputs},
@@ -14,24 +15,24 @@ use crate::{
 /// This one runs error analysis and returns its results
 /// The range results should be slightly different than analysis_range_only,
 /// Because in this version we also care about roundoff errors
-pub fn analysis_main(precision: &Precision) -> Result<Program> {
+pub fn analysis_main(config: Config) -> Result<Program> {
     let log_file_path = match setup_logger() {
         Ok(path) => path,
         Err(e) => anyhow::bail!("Failed to set up logger: {}", e),
     };
     let start_time = std::time::Instant::now();
 
-    info!("Current precision: {:#?}", precision);
+    info!("Current precision: {:#?}", config.precision);
 
     // Perform unrolling here
     let mut program = unroll_ir(&get_program());
 
     println!("Starting worst case analysis...");
     // create folder if not exist
-    let folder = crate::config::CODEGEN_DIR;
+    let folder = &config.codegen_dir;
     std::fs::create_dir_all(folder).unwrap();
     // TODO: call daisy here
-    match generate_daisy_dsl(&program) {
+    match generate_daisy_dsl(&program, &config) {
         Ok(_) => (),
         Err(e) => anyhow::bail!("Code generation failed: {}", e),
     }
@@ -53,9 +54,9 @@ pub fn analysis_main(precision: &Precision) -> Result<Program> {
     let daisy_directory = manifest_dir.join("daisy");
     let daisy_binary = daisy_directory.join("daisy");
 
-    let scala_file = std::path::Path::new(crate::config::CODEGEN_DIR)
+    let scala_file = config.codegen_dir
         .join("daisy")
-        .join(format!("{}.scala", crate::config::CODEGEN_FILENAME));
+        .join(format!("{}.scala", config.codegen_filename));
     let scala_file = std::fs::canonicalize(scala_file)?;
 
     // before running, run mkdir daisy_directory + "output"
@@ -68,7 +69,7 @@ pub fn analysis_main(precision: &Precision) -> Result<Program> {
             "--lang=C", // TODO: add ap_fixed option
             "--apfixed",
         ])
-        .arg(format!("--precision={}", precision))
+        .arg(format!("--precision={}", config.precision))
         .args([
             "--rangeMethod=interval",
             "--errorMethod=interval",
@@ -90,8 +91,8 @@ pub fn analysis_main(precision: &Precision) -> Result<Program> {
         crate::analysis::daisy::parse_daisy_precisions(daisy_directory.join("precisions.txt"), &range_results)?;
     
     // after getting results, we can generate C now!
-    generate_c(&program, &precision_results)?;
-    generate_c_with_conversion(&program, &precision_results)?;
+    generate_c(&program, &precision_results, &config)?;
+    generate_c_with_conversion(&program, &precision_results, &config)?;
     
     update_program_outputs(
         &mut program,
@@ -107,7 +108,7 @@ pub fn analysis_main(precision: &Precision) -> Result<Program> {
     // Finally, we copy the codegen to our output directory and log the new file path to user
     // from daisy_directory + "output" + scala_file.name() to config.output_dir + scala_file.name()
     let input_file = daisy_directory.join("output").join("codegen.cpp"); // TODO: make this dynamic
-    let output_dir = manifest_dir.join("output/codegen/apfixed/");
+    let output_dir = config.codegen_dir.join("apfixed");
     // generate output directory if not exist
     std::fs::create_dir_all(&output_dir)?;
     let output_file = output_dir.join("codegen.cpp"); // TODO: make this dynamic
@@ -116,7 +117,7 @@ pub fn analysis_main(precision: &Precision) -> Result<Program> {
         &output_file,
     )?;
 
-    let output_dir = manifest_dir.join("output/analysis_data/");
+    let output_dir = config.codegen_dir.join("analysis_data");
     std::fs::create_dir_all(&output_dir)?;
     // Write all ranges and all errors in output directory, too
     let ranges_output_file = output_dir.join("analysis_ranges.txt");

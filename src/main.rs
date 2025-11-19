@@ -37,13 +37,14 @@ use crate::{
         },
     },
     analysis::{analysis::analysis_main, real::Real},
+    config::Config,
     helpers::{cos_extremes, sin_extremes},
     ir::{
         program::{get_program, register_matrix_output, register_vector_output},
     },
 };
 
-fn fk(precision: &Precision) -> Result<()> {
+fn fk(config: Config) -> Result<()> {
     const DOF: usize = 7;
 
     let joint_bounds = panda_get_bounds();
@@ -95,13 +96,13 @@ fn fk(precision: &Precision) -> Result<()> {
         register_vector_output(a, &format!("all_a_{}", i));
     });
 
-    analysis_main(precision).with_context(|| "Failed to analyze program")?;
+    analysis_main(config).with_context(|| "Failed to analyze program")?;
 
     Ok(())
 }
 
 #[allow(dead_code)]
-fn rnea_deriv(precision: &Precision) -> Result<()> {
+fn rnea_deriv(config: Config) -> Result<()> {
     const DOF: usize = 4;
 
     let joint_bounds = roarm_m2_get_bounds();
@@ -137,13 +138,13 @@ fn rnea_deriv(precision: &Precision) -> Result<()> {
     register_matrix_output(&mut rnea_partial_dv, "rnea_partial_dv");
     register_matrix_output(&mut rnea_partial_dq, "rnea_partial_dq");
 
-    analysis_main(precision).with_context(|| "Failed to analyze program")?;
+    analysis_main(config).with_context(|| "Failed to analyze program")?;
 
     Ok(())
 }
 
 #[allow(dead_code)]
-fn rnea_deriv_7dof(precision: &Precision) -> Result<()> {
+fn rnea_deriv_7dof(config: Config) -> Result<()> {
     const DOF: usize = 7;
 
     let v_ranges = vec![(Real::from_f64(-0.5), Real::from_f64(0.5)); DOF];
@@ -176,7 +177,7 @@ fn rnea_deriv_7dof(precision: &Precision) -> Result<()> {
 
     let (_rnea_partial_da, _rnea_partial_dv, _rnea_partial_dq, _) = result;
 
-    analysis_main(precision).with_context(|| "Failed to analyze program")?;
+    analysis_main(config).with_context(|| "Failed to analyze program")?;
 
     Ok(())
 }
@@ -185,9 +186,14 @@ fn main() -> Result<()> {
     let args = Args::parse();
     let precision = Precision::from_str(&args.precision).map_err(|e| anyhow::anyhow!(e))?;
 
-    fk(&precision)?;
-    //rnea_deriv(&precision)?;
-    //rnea_deriv7dof(&precision)?;
+    let config = Config {
+        precision,
+        ..Default::default()
+    };
+
+    fk(config)?;
+    //rnea_deriv(config)?;
+    //rnea_deriv7dof(config)?;
 
 
 

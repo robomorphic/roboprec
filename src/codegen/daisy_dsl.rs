@@ -3,17 +3,18 @@ use log::info;
 use std::io::Write;
 
 use crate::{
+    config::Config,
     ir::{
         expr::{Expr, Opr, OprBinary, OprUnary},
         program::{Program, ProgramInput},
     },
 };
 
-pub fn generate_daisy_dsl(program: &Program) -> Result<()> {
+pub fn generate_daisy_dsl(program: &Program, config: &Config) -> Result<()> {
     info!("Generating Daisy DSL code...");
     let inputs = program.get_inputs();
     let body = program.get_body();
-    let func_name = crate::config::CODEGEN_FILENAME;
+    let func_name = &config.codegen_filename;
 
     let mut generated_code = String::new();
 
@@ -170,13 +171,13 @@ pub fn generate_daisy_dsl(program: &Program) -> Result<()> {
     generated_code.push_str("}}}\n");
 
     // Create directory and write to file
-    let folder = format!("{}/daisy", crate::config::CODEGEN_DIR);
+    let folder = config.codegen_dir.join("daisy");
     std::fs::create_dir_all(&folder).expect("Failed to create codegen directory for Daisy DSL");
-    let filename = format!("{}/{}.scala", folder, crate::config::CODEGEN_FILENAME);
+    let filename = folder.join(format!("{}.scala", config.codegen_filename));
 
     let mut file = match std::fs::File::create(filename.clone()) {
         Ok(f) => f,
-        Err(e) => anyhow::bail!("Unable to create file {}: {}", filename, e),
+        Err(e) => anyhow::bail!("Unable to create file {}: {}", filename.display(), e),
     };
 
     file.write_all(generated_code.as_bytes())

@@ -7,6 +7,7 @@ use std::io::Write;
 
 use crate::{
     analysis::real::Real,
+    config::Config,
     ir::{
         expr::{Expr, Opr, OprBinary, OprUnary},
         precision::Precision,
@@ -80,13 +81,17 @@ fn value_precision_to_str(value: &Real, precision: &Precision) -> String {
     }
 }
 
-pub fn generate_c_with_conversion(program: &Program, precisions: &IndexMap<String, Precision>) -> Result<()> {
+pub fn generate_c_with_conversion(
+    program: &Program,
+    precisions: &IndexMap<String, Precision>,
+    config: &Config,
+) -> Result<()> {
     info!("Generating C code...");
     // create a string for the file, so we can write to it at once
     let inputs = program.get_inputs();
     let body = program.get_body();
     let outputs = program.get_outputs();
-    let func_name = crate::config::CODEGEN_FILENAME;
+    let func_name = &config.codegen_filename;
 
     let mut generated_code = String::new();
 
@@ -630,12 +635,12 @@ pub fn generate_c_with_conversion(program: &Program, precisions: &IndexMap<Strin
 
     generated_code.push_str("}\n");
 
-    let folder = format!("{}/C", crate::config::CODEGEN_DIR);
+    let folder = config.codegen_dir.join("C");
     std::fs::create_dir_all(&folder).expect("Failed to create codegen directory for C");
-    let filename = format!("{}/{}_with_conversion.cpp", folder, crate::config::CODEGEN_FILENAME);
+    let filename = folder.join(format!("{}_with_conversion.cpp", config.codegen_filename));
     let mut file = match std::fs::File::create(filename.clone()) {
         Ok(f) => f,
-        Err(e) => anyhow::bail!("Unable to create file {}: {}", filename, e),
+        Err(e) => anyhow::bail!("Unable to create file {}: {}", filename.display(), e),
     };
 
     file.write_all(generated_code.as_bytes())
