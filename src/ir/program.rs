@@ -43,6 +43,7 @@ pub struct Program {
     body: Vec<Expr>,
 }
 
+#[allow(dead_code)]
 pub fn register_scalar_output(output: &mut Scalar, name: &str) {
     *output = output.define(name.to_string());
     get_program().outputs.insert(
@@ -58,6 +59,7 @@ pub fn register_scalar_output(output: &mut Scalar, name: &str) {
     );
 }
 
+#[allow(dead_code)]
 pub fn register_vector_output(output: &mut Vector, name: &str) {
     *output = output.define(name.to_string());
     get_program().outputs.insert(
@@ -76,7 +78,7 @@ pub fn register_vector_output(output: &mut Vector, name: &str) {
         },
     );
 }
-
+#[allow(dead_code)]
 pub fn register_matrix_output(output: &mut Matrix, name: &str) {
     *output = output.define(name.to_string());
     get_program().outputs.insert(
@@ -98,7 +100,64 @@ pub fn register_matrix_output(output: &mut Matrix, name: &str) {
                 .collect(),
         },
     );
-    // Set output to be new_output
+}
+#[allow(dead_code)]
+pub fn add_input_scalar(
+    name: &str,
+    range: (Real, Real),
+    default_value: f64,
+) -> Scalar {
+    let new_id = Identifier::new_scalar(&name);
+    let info = Input { range };
+    get_program().inputs
+        .insert(new_id.clone(), ProgramInput::Scalar { info });
+
+    Scalar {
+        id: new_id,
+        value: Real::from_f64(default_value),
+    }
+}
+#[allow(dead_code)]
+pub fn add_input_vector(
+    name: &str,
+    range: Vec<(Real, Real)>,
+    default_value: Vec<f64>,
+) -> Vector {
+    let size = default_value.len();
+    let new_id = Identifier::new_vector(&name, size);
+
+    let info = range.into_iter().map(|range| Input { range }).collect();
+    get_program().inputs
+        .insert(new_id.clone(), ProgramInput::Vector { info });
+
+    Vector {
+        id: new_id,
+        value: default_value.into_iter().map(Real::from_f64).collect(),
+    }
+}
+#[allow(dead_code)]
+pub fn add_input_matrix(
+    name: &str,
+    range: Vec<Vec<(Real, Real)>>,
+    default_value: Vec<Vec<f64>>,
+) -> Matrix {
+    let size0 = range.len();
+    let size1 = range[0].len();
+    let new_id = Identifier::new_matrix(&name, size0, size1);
+    let info = range
+        .into_iter()
+        .map(|row_range| row_range.into_iter().map(|range| Input { range }).collect())
+        .collect();
+    get_program().inputs
+        .insert(new_id.clone(), ProgramInput::Matrix { info });
+
+    Matrix {
+        id: new_id,
+        value: default_value
+            .into_iter()
+            .map(|row| row.into_iter().map(Real::from_f64).collect())
+            .collect(),
+    }
 }
 
 impl Program {
@@ -107,67 +166,6 @@ impl Program {
             inputs: IndexMap::new(),
             outputs: IndexMap::new(),
             body: Vec::new(),
-        }
-    }
-
-    pub fn add_input_scalar(
-        &mut self,
-        name: &str,
-        range: (Real, Real),
-        default_value: f64,
-    ) -> Scalar {
-        let new_id = Identifier::new_scalar(&name);
-        let info = Input { range };
-        self.inputs
-            .insert(new_id.clone(), ProgramInput::Scalar { info });
-
-        Scalar {
-            id: new_id,
-            value: Real::from_f64(default_value),
-        }
-    }
-
-    pub fn add_input_vector(
-        &mut self,
-        name: &str,
-        range: Vec<(Real, Real)>,
-        default_value: Vec<f64>,
-    ) -> Vector {
-        let size = default_value.len();
-        let new_id = Identifier::new_vector(&name, size);
-
-        let info = range.into_iter().map(|range| Input { range }).collect();
-        self.inputs
-            .insert(new_id.clone(), ProgramInput::Vector { info });
-
-        Vector {
-            id: new_id,
-            value: default_value.into_iter().map(Real::from_f64).collect(),
-        }
-    }
-
-    pub fn add_input_matrix(
-        &mut self,
-        name: &str,
-        range: Vec<Vec<(Real, Real)>>,
-        default_value: Vec<Vec<f64>>,
-    ) -> Matrix {
-        let size0 = range.len();
-        let size1 = range[0].len();
-        let new_id = Identifier::new_matrix(&name, size0, size1);
-        let info = range
-            .into_iter()
-            .map(|row_range| row_range.into_iter().map(|range| Input { range }).collect())
-            .collect();
-        self.inputs
-            .insert(new_id.clone(), ProgramInput::Matrix { info });
-
-        Matrix {
-            id: new_id,
-            value: default_value
-                .into_iter()
-                .map(|row| row.into_iter().map(Real::from_f64).collect())
-                .collect(),
         }
     }
 
@@ -197,26 +195,6 @@ impl Program {
 
     pub fn set_body(&mut self, body: &[Expr]) {
         self.body = body.to_vec();
-    }
-
-    pub fn get_curr_intervals(&self) -> IndexMap<Identifier, (Real, Real)> {
-        let mut res = IndexMap::new();
-
-        for (id, input) in &self.inputs {
-            match input {
-                ProgramInput::Scalar { info } => {
-                    res.insert(id.clone(), info.range.clone());
-                }
-                ProgramInput::Vector { .. } => {
-                    panic!("You should have call unroll before get_curr_intervals")
-                }
-                ProgramInput::Matrix { .. } => {
-                    panic!("You should have call unroll before get_curr_intervals")
-                }
-            }
-        }
-
-        res
     }
 }
 

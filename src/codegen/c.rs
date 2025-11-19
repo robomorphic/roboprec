@@ -102,7 +102,7 @@ pub fn generate_c(
     generated_code.push_str("\ntypedef struct {\n");
     for (id, output) in outputs {
         match output {
-            ProgramOutput::Scalar { info } => {
+            ProgramOutput::Scalar { .. } => {
                 let name = id.name();
                 let precision = precisions.get(&name.clone()).ok_or_else(|| {
                     anyhow::anyhow!(
@@ -171,7 +171,7 @@ pub fn generate_c(
 
     for (i, (id, input)) in inputs.iter().enumerate() {
         match input {
-            ProgramInput::Scalar { info } => {
+            ProgramInput::Scalar { .. } => {
                 let name = id.name();
                 let precision = precisions.get(&name.clone()).ok_or_else(|| {
                     anyhow::anyhow!(
@@ -537,7 +537,7 @@ pub fn generate_c(
 
     generated_code.push_str("}\n");
 
-    let folder = config.codegen_dir.join("C");
+    let folder = config.codegen_dir.join("codegen/C");
     std::fs::create_dir_all(&folder).expect("Failed to create codegen directory for C");
     let filename = folder.join(format!("{}.cpp", config.codegen_filename));
     let mut file = match std::fs::File::create(filename.clone()) {

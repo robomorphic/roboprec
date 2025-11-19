@@ -6,7 +6,6 @@ use crate::{
     codegen::{c::generate_c, c_with_conversion::generate_c_with_conversion, daisy_dsl::generate_daisy_dsl}, 
     config::Config,
     ir::{
-        precision::Precision,
         program::{Program, get_program, report_analysis_errors, report_analysis_ranges, report_worst_values, update_program_outputs},
         unroll::unroll_ir,
     }, logger::setup_logger
@@ -15,7 +14,7 @@ use crate::{
 /// This one runs error analysis and returns its results
 /// The range results should be slightly different than analysis_range_only,
 /// Because in this version we also care about roundoff errors
-pub fn analysis_main(config: Config) -> Result<Program> {
+pub fn analysis(config: Config) -> Result<Program> {
     let log_file_path = match setup_logger() {
         Ok(path) => path,
         Err(e) => anyhow::bail!("Failed to set up logger: {}", e),
@@ -108,7 +107,7 @@ pub fn analysis_main(config: Config) -> Result<Program> {
     // Finally, we copy the codegen to our output directory and log the new file path to user
     // from daisy_directory + "output" + scala_file.name() to config.output_dir + scala_file.name()
     let input_file = daisy_directory.join("output").join("codegen.cpp"); // TODO: make this dynamic
-    let output_dir = config.codegen_dir.join("apfixed");
+    let output_dir = config.codegen_dir.join("codegen/apfixed");
     // generate output directory if not exist
     std::fs::create_dir_all(&output_dir)?;
     let output_file = output_dir.join("codegen.cpp"); // TODO: make this dynamic
@@ -130,10 +129,8 @@ pub fn analysis_main(config: Config) -> Result<Program> {
     let duration = start_time.elapsed();
     println!("Total analysis time: {:?}", duration);
     println!("Logs are saved in {}", log_file_path.display());
-    println!("Codegen output saved in {}", output_file.display());
-    println!("Analysis ranges saved in {}", ranges_output_file.display());
-    println!("Analysis errors saved in {}", errors_output_file.display());
-    println!("Analysis precisions saved in {}", precisions_output_file.display());
+    println!("Codegen output is saved in {}", config.codegen_dir.join("codegen/").display());
+    println!("Analysis data is saved in {}", output_dir.display());
 
     Ok(program)
 }

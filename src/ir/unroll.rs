@@ -1,5 +1,4 @@
 use indexmap::IndexMap;
-use log::info;
 
 use crate::{
     analysis::real::Real,
@@ -784,7 +783,6 @@ pub fn unroll_ir(program: &Program) -> Program {
             }
         };
         new_outputs.insert(id.clone(), new_output);
-        info!("Inserting new output for id {:?}", id);
     }
 
     // return the new program

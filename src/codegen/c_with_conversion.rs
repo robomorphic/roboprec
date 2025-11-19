@@ -102,8 +102,7 @@ pub fn generate_c_with_conversion(
     generated_code.push_str("\ntypedef struct {\n");
     for (id, output) in outputs {
         match output {
-            ProgramOutput::Scalar { info } => {
-                let name = id.name();
+            ProgramOutput::Scalar { .. } => {
                 generated_code.push_str(
                     format!(
                         "    double {};\n",
@@ -114,7 +113,6 @@ pub fn generate_c_with_conversion(
             }
             ProgramOutput::Vector { info: infos } => {
                 for (i, info) in infos.iter().enumerate() {
-                    let name = info.id.name();
                     generated_code.push_str(
                         format!(
                             "    double {}_{};\n",
@@ -128,7 +126,6 @@ pub fn generate_c_with_conversion(
             ProgramOutput::Matrix { info: infos } => {
                 for (i, row) in infos.iter().enumerate() {
                     for (j, info) in row.iter().enumerate() {
-                        let name = info.id.name();
                         generated_code.push_str(
                             format!(
                                 "    double {}_{}_{};\n",
@@ -151,7 +148,7 @@ pub fn generate_c_with_conversion(
     let mut input_conversion_str = String::new();
     for (i, (id, input)) in inputs.iter().enumerate() {
         match input {
-            ProgramInput::Scalar { info } => {
+            ProgramInput::Scalar { .. } => {
                 let name = id.name();
                 let precision = precisions.get(&name.clone()).ok_or_else(|| {
                     anyhow::anyhow!(
@@ -635,7 +632,7 @@ pub fn generate_c_with_conversion(
 
     generated_code.push_str("}\n");
 
-    let folder = config.codegen_dir.join("C");
+    let folder = config.codegen_dir.join("codegen/C");
     std::fs::create_dir_all(&folder).expect("Failed to create codegen directory for C");
     let filename = folder.join(format!("{}_with_conversion.cpp", config.codegen_filename));
     let mut file = match std::fs::File::create(filename.clone()) {

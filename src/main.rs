@@ -11,7 +11,7 @@ mod types;
 use anyhow::{Context, Result};
 use std::vec;
 use clap::Parser;
-use crate::ir::precision::Precision;
+use crate::ir::{precision::Precision, program::add_input_vector};
 use std::str::FromStr;
 
 #[derive(Parser, Debug)]
@@ -36,11 +36,11 @@ use crate::{
             roarm_m2::{roarm_m2, roarm_m2_get_bounds},
         },
     },
-    analysis::{analysis::analysis_main, real::Real},
+    analysis::{analysis::analysis, real::Real},
     config::Config,
     helpers::{cos_extremes, sin_extremes},
     ir::{
-        program::{get_program, register_matrix_output, register_vector_output},
+        program::{register_matrix_output, register_vector_output},
     },
 };
 
@@ -67,11 +67,11 @@ fn fk(config: Config) -> Result<()> {
         .collect::<Vec<(Real, Real)>>();
 
     let qsin =
-        get_program().add_input_vector("qsin", minmax_sin.clone(), vec![0.0; DOF]);
+        add_input_vector("qsin", minmax_sin.clone(), vec![0.0; DOF]);
     let qcos =
-        get_program().add_input_vector("qcos", minmax_cos.clone(), vec![0.0; DOF]);
-    let v = get_program().add_input_vector("v", v_ranges.clone(), vec![0.0; DOF]);
-    let a = get_program().add_input_vector("a", a_ranges.clone(), vec![0.0; DOF]);
+        add_input_vector("qcos", minmax_cos.clone(), vec![0.0; DOF]);
+    let v = add_input_vector("v", v_ranges.clone(), vec![0.0; DOF]);
+    let a = add_input_vector("a", a_ranges.clone(), vec![0.0; DOF]);
 
     let result = forward_kinematics(qcos, qsin, v, a, &panda());
 
@@ -96,7 +96,7 @@ fn fk(config: Config) -> Result<()> {
         register_vector_output(a, &format!("all_a_{}", i));
     });
 
-    analysis_main(config).with_context(|| "Failed to analyze program")?;
+    analysis(config).with_context(|| "Failed to analyze program")?;
 
     Ok(())
 }
@@ -125,11 +125,11 @@ fn rnea_deriv(config: Config) -> Result<()> {
         .collect::<Vec<(Real, Real)>>();
 
     let qsin =
-        get_program().add_input_vector("qsin", minmax_sin.clone(), vec![0.0; DOF]);
+        add_input_vector("qsin", minmax_sin.clone(), vec![0.0; DOF]);
     let qcos =
-        get_program().add_input_vector("qcos", minmax_cos.clone(), vec![0.0; DOF]);
-    let v = get_program().add_input_vector("v", v_ranges.clone(), vec![0.0; DOF]);
-    let a = get_program().add_input_vector("a", a_ranges.clone(), vec![0.0; DOF]);
+        add_input_vector("qcos", minmax_cos.clone(), vec![0.0; DOF]);
+    let v = add_input_vector("v", v_ranges.clone(), vec![0.0; DOF]);
+    let a = add_input_vector("a", a_ranges.clone(), vec![0.0; DOF]);
 
     let result = rneaderivatives(qcos, qsin, v, a, &roarm_m2());
 
@@ -138,7 +138,7 @@ fn rnea_deriv(config: Config) -> Result<()> {
     register_matrix_output(&mut rnea_partial_dv, "rnea_partial_dv");
     register_matrix_output(&mut rnea_partial_dq, "rnea_partial_dq");
 
-    analysis_main(config).with_context(|| "Failed to analyze program")?;
+    analysis(config).with_context(|| "Failed to analyze program")?;
 
     Ok(())
 }
@@ -167,17 +167,17 @@ fn rnea_deriv_7dof(config: Config) -> Result<()> {
         .collect::<Vec<(Real, Real)>>();
 
     let qsin =
-        get_program().add_input_vector("qsin", minmax_sin.clone(), vec![0.0; DOF]);
+        add_input_vector("qsin", minmax_sin.clone(), vec![0.0; DOF]);
     let qcos =
-        get_program().add_input_vector("qcos", minmax_cos.clone(), vec![0.0; DOF]);
-    let v = get_program().add_input_vector("v", v_ranges.clone(), vec![0.0; DOF]);
-    let a = get_program().add_input_vector("a", a_ranges.clone(), vec![0.0; DOF]);
+        add_input_vector("qcos", minmax_cos.clone(), vec![0.0; DOF]);
+    let v = add_input_vector("v", v_ranges.clone(), vec![0.0; DOF]);
+    let a = add_input_vector("a", a_ranges.clone(), vec![0.0; DOF]);
 
     let result = rneaderivatives(qcos, qsin, v, a, &panda());
 
     let (_rnea_partial_da, _rnea_partial_dv, _rnea_partial_dq, _) = result;
 
-    analysis_main(config).with_context(|| "Failed to analyze program")?;
+    analysis(config).with_context(|| "Failed to analyze program")?;
 
     Ok(())
 }
@@ -209,7 +209,7 @@ fn main() -> Result<()> {
     register_scalar_output(&mut res, "output");
 
     // Do the analysis
-    analysis_main()?;
+    analysis()?;
 
     // If you want, you can check the output values in rust
     assert!(res.value.to_f64() == default_val.powi(3));

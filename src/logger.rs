@@ -47,8 +47,3 @@ pub fn setup_logger() -> Result<PathBuf, fern::InitError> {
 
     Ok(log_path)
 }
-
-/// Returns the path to the log file if the logger has already been initialized.
-pub fn current_log_file() -> Option<PathBuf> {
-    LOG_FILE_PATH.get().cloned()
-}

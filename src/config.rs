@@ -12,7 +12,7 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             precision: Precision::Float64,
-            codegen_dir: PathBuf::from("output/codegen"),
+            codegen_dir: PathBuf::from("output/"),
             codegen_filename: "codegen".to_string(),
         }
     }
