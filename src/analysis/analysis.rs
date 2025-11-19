@@ -68,7 +68,9 @@ pub fn analysis_main() -> Result<Program> {
             "--codegen",
             "--lang=C", // TODO: add ap_fixed option
             "--apfixed",
-            "--precision=Fixed32", // TODO: make this dynamic
+        ])
+        .arg(format!("--precision={}", config.precision))
+        .args([
             "--rangeMethod=interval",
             "--errorMethod=interval",
         ])

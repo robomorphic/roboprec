@@ -2,3 +2,4 @@
 verbose = false # TODO: change to rust logging level
 codegen_filename = "codegen"
 codegen_dir = "output/codegen"
+precision = "Fixed16-8"

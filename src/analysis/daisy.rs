@@ -195,35 +195,58 @@ pub fn parse_daisy_precisions<P: AsRef<Path>>(path: P, range_results: &DaisyRang
                         idx + 1
                     )
                 })?;
-            let total_bits = bits_str
-                .parse::<i32>()
-                .with_context(|| {
+
+            if let Some((total_str, frac_str)) = bits_str.split_once('-') {
+                let total_bits = total_str.parse::<i32>().with_context(|| {
                     format!(
-                        "Malformed line {} in Daisy precisions file: missing total bits",
+                        "Malformed line {} in Daisy precisions file: invalid total bits",
                         idx + 1
                     )
                 })?;
-            
-            // first, get the absolute max of ranges
-            let range = range_results.get(&identifier).with_context(|| {
-                format!(
-                    "Daisy precisions file line {} references unknown identifier '{}'",
-                    idx + 1,
-                    identifier
-                )
-            })?;
-            let abs_max = range.lower.abs().max(range.upper.abs());
-            let abs_max = abs_max.floor() as u32;
-            // convert it to rug Integer
-            // TODO: get rid of rug dependency later
-            let abs_max = Integer::from_u32(abs_max);
-            let integer_bits = if abs_max.is_zero() {
-                1
+                let fractional_bits = frac_str.parse::<i32>().with_context(|| {
+                    format!(
+                        "Malformed line {} in Daisy precisions file: invalid fractional bits",
+                        idx + 1
+                    )
+                })?;
+                Precision::Fixed {
+                    total_bits,
+                    fractional_bits,
+                }
             } else {
-                abs_max.bits() as i32 + 1
-            };
+                let total_bits = bits_str
+                    .parse::<i32>()
+                    .with_context(|| {
+                        format!(
+                            "Malformed line {} in Daisy precisions file: missing total bits",
+                            idx + 1
+                        )
+                    })?;
 
-            Precision::Fixed { total_bits, fractional_bits: total_bits - integer_bits }
+                // first, get the absolute max of ranges
+                let range = range_results.get(&identifier).with_context(|| {
+                    format!(
+                        "Daisy precisions file line {} references unknown identifier '{}'",
+                        idx + 1,
+                        identifier
+                    )
+                })?;
+                let abs_max = range.lower.abs().max(range.upper.abs());
+                let abs_max = abs_max.floor() as u32;
+                // convert it to rug Integer
+                // TODO: get rid of rug dependency later
+                let abs_max = Integer::from_u32(abs_max);
+                let integer_bits = if abs_max.is_zero() {
+                    1
+                } else {
+                    abs_max.bits() as i32 + 1
+                };
+
+                Precision::Fixed {
+                    total_bits,
+                    fractional_bits: total_bits - integer_bits,
+                }
+            }
         } else if value == "Float32" {
             Precision::Float32
         } else if value == "Float64" {

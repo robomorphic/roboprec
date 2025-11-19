@@ -1,13 +1,15 @@
 use once_cell::sync::Lazy;
-use serde::{Deserialize, Deserializer};
+use serde::Deserialize;
 use std::fs;
 use std::sync::RwLock;
+use crate::ir::precision::Precision;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct ConfigType {
     pub verbose: bool,
     pub codegen_filename: String,
     pub codegen_dir: String,
+    pub precision: Precision,
 }
 
 pub static CONFIG: Lazy<RwLock<ConfigType>> = Lazy::new(|| {
@@ -24,6 +26,10 @@ pub static TEST_CONFIG: Lazy<ConfigType> = Lazy::new(|| {
         // the rest are not going to be used
         codegen_filename: "test_default".to_string(),
         codegen_dir: "./test_output/codegen".to_string(),
+        precision: Precision::Fixed {
+            total_bits: 32,
+            fractional_bits: 16,
+        },
     }
 });
 
