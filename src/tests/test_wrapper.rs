@@ -1,7 +1,4 @@
-use crate::{
-    config::{ConfigType, load_special_config, load_test_config, set_default_config},
-    ir::{helper::clear_all_names, program::clear_program},
-};
+use crate::ir::{helper::clear_all_names, program::clear_program};
 use std::sync::{Mutex, OnceLock};
 
 // only one test should run at a time
@@ -10,11 +7,9 @@ static TEST_MUTEX: OnceLock<Mutex<()>> = OnceLock::new();
 fn setup_default_test() {
     clear_all_names();
     clear_program();
-    load_test_config();
 }
 
 fn teardown_default_test() {
-    set_default_config();
 }
 
 // Run setup_default_test and teardown_default_test automatically
@@ -51,12 +46,11 @@ where
 }
 
 // only going to be used in tests
-pub fn run_default_test_with_special_config<T>(test_func: T, config: ConfigType)
+pub fn run_default_test_with_special_config<T>(test_func: T, _config: crate::ir::precision::Precision)
 where
     T: FnOnce(),
 {
     // even if test_func panics, the guard will be dropped and teardown will be called
     let _guard = TestGuard::new();
-    load_special_config(config);
     test_func();
 }

@@ -39,12 +39,11 @@ use crate::{
     analysis::{analysis::analysis_main, real::Real},
     helpers::{cos_extremes, sin_extremes},
     ir::{
-        helper::clear_all_names,
-        program::{clear_program, get_program, register_matrix_output, register_scalar_output, register_vector_output},
+        program::{get_program, register_matrix_output, register_vector_output},
     },
 };
 
-fn fk() -> Result<()> {
+fn fk(precision: &Precision) -> Result<()> {
     const DOF: usize = 7;
 
     let joint_bounds = panda_get_bounds();
@@ -96,13 +95,13 @@ fn fk() -> Result<()> {
         register_vector_output(a, &format!("all_a_{}", i));
     });
 
-    analysis_main().with_context(|| "Failed to analyze program")?;
+    analysis_main(precision).with_context(|| "Failed to analyze program")?;
 
     Ok(())
 }
 
 #[allow(dead_code)]
-fn rnea_deriv() -> Result<()> {
+fn rnea_deriv(precision: &Precision) -> Result<()> {
     const DOF: usize = 4;
 
     let joint_bounds = roarm_m2_get_bounds();
@@ -138,13 +137,13 @@ fn rnea_deriv() -> Result<()> {
     register_matrix_output(&mut rnea_partial_dv, "rnea_partial_dv");
     register_matrix_output(&mut rnea_partial_dq, "rnea_partial_dq");
 
-    analysis_main().with_context(|| "Failed to analyze program")?;
+    analysis_main(precision).with_context(|| "Failed to analyze program")?;
 
     Ok(())
 }
 
 #[allow(dead_code)]
-fn rnea_deriv_7dof() -> Result<()> {
+fn rnea_deriv_7dof(precision: &Precision) -> Result<()> {
     const DOF: usize = 7;
 
     let v_ranges = vec![(Real::from_f64(-0.5), Real::from_f64(0.5)); DOF];
@@ -177,7 +176,7 @@ fn rnea_deriv_7dof() -> Result<()> {
 
     let (_rnea_partial_da, _rnea_partial_dv, _rnea_partial_dq, _) = result;
 
-    analysis_main().with_context(|| "Failed to analyze program")?;
+    analysis_main(precision).with_context(|| "Failed to analyze program")?;
 
     Ok(())
 }
@@ -185,11 +184,11 @@ fn rnea_deriv_7dof() -> Result<()> {
 fn main() -> Result<()> {
     let args = Args::parse();
     let precision = Precision::from_str(&args.precision).map_err(|e| anyhow::anyhow!(e))?;
-    config::init_config(precision);
 
-    fk()?;
-    //rnea_deriv()?;
-    //rnea_deriv7dof();
+    fk(&precision)?;
+    //rnea_deriv(&precision)?;
+    //rnea_deriv7dof(&precision)?;
+
 
 
     /*

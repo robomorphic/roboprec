@@ -5,13 +5,10 @@ use log::error;
 use log::info;
 use std::io::Write;
 
-use crate::ir::precision;
 use crate::{
     analysis::real::Real,
-    config::CONFIG,
     ir::{
         expr::{Expr, Opr, OprBinary, OprUnary},
-        identifier::Identifier,
         precision::Precision,
         program::{Program, ProgramInput, ProgramOutput},
     },
@@ -89,7 +86,6 @@ pub fn generate_c_with_conversion(program: &Program, precisions: &IndexMap<Strin
     let inputs = program.get_inputs();
     let body = program.get_body();
     let outputs = program.get_outputs();
-    let config = CONFIG.read().unwrap().clone();
     let func_name = crate::config::CODEGEN_FILENAME;
 
     let mut generated_code = String::new();

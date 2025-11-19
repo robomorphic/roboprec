@@ -4,8 +4,8 @@ use log::info;
 use crate::{
     analysis::daisy::{write_errors_to_file, write_precisions_to_file, write_ranges_to_file},
     codegen::{c::generate_c, c_with_conversion::generate_c_with_conversion, daisy_dsl::generate_daisy_dsl}, 
-    config::CONFIG, 
     ir::{
+        precision::Precision,
         program::{Program, get_program, report_analysis_errors, report_analysis_ranges, report_worst_values, update_program_outputs},
         unroll::unroll_ir,
     }, logger::setup_logger
@@ -14,15 +14,14 @@ use crate::{
 /// This one runs error analysis and returns its results
 /// The range results should be slightly different than analysis_range_only,
 /// Because in this version we also care about roundoff errors
-pub fn analysis_main() -> Result<Program> {
+pub fn analysis_main(precision: &Precision) -> Result<Program> {
     let log_file_path = match setup_logger() {
         Ok(path) => path,
         Err(e) => anyhow::bail!("Failed to set up logger: {}", e),
     };
     let start_time = std::time::Instant::now();
-    let config = CONFIG.read().unwrap().clone();
 
-    info!("Current config: {:#?}", config);
+    info!("Current precision: {:#?}", precision);
 
     // Perform unrolling here
     let mut program = unroll_ir(&get_program());
@@ -69,7 +68,7 @@ pub fn analysis_main() -> Result<Program> {
             "--lang=C", // TODO: add ap_fixed option
             "--apfixed",
         ])
-        .arg(format!("--precision={}", config.precision))
+        .arg(format!("--precision={}", precision))
         .args([
             "--rangeMethod=interval",
             "--errorMethod=interval",
