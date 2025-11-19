@@ -1,5 +1,5 @@
 use super::robots::robot_info::RobotInfo;
-use crate::{Matrix, Scalar, Vector};
+use roboprec::{Matrix, Scalar, Vector};
 
 fn alpha_cross_linear(s: &Scalar, vin: &Vector) -> Vector {
     let alpha_cross1 = &(-s) * &vin.at(1);

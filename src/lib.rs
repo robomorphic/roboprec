@@ -1,3 +1,5 @@
+extern crate self as roboprec;
+
 pub mod analysis;
 pub mod config;
 pub mod ir;

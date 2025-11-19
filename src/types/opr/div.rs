@@ -1,7 +1,7 @@
 use std::ops::Div;
 
 use crate::{
-    Scalar, Vector,
+    types::{scalar::Scalar, vector::Vector},
     analysis::real::Real,
     ir::expr::{OprBinary, create_binary_scalar_expr, create_binary_vector_expr},
 };

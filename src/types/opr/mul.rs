@@ -1,7 +1,7 @@
 use std::ops::Mul;
 
 use crate::{
-    Matrix, Scalar, Vector,
+    types::{matrix::Matrix, scalar::Scalar, vector::Vector},
     analysis::real::Real,
     ir::expr::{
         OprBinary, create_binary_matrix_expr, create_binary_scalar_expr, create_binary_vector_expr,

@@ -1,5 +1,5 @@
 use super::robots::robot_info::RobotInfo;
-use crate::{Matrix, Scalar, Vector};
+use roboprec::{Scalar, Vector, Matrix};
 
 fn act_motion_inv(
     translation: Vector,

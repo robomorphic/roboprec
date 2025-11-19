@@ -1,7 +1,7 @@
 use std::ops::Neg;
 
 use crate::{
-    Matrix, Scalar, Vector,
+    types::{matrix::Matrix, scalar::Scalar, vector::Vector},
     analysis::real::Real,
     ir::expr::{
         OprUnary, create_unary_matrix_expr, create_unary_scalar_expr, create_unary_vector_expr,

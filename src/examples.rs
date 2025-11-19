@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use std::vec;
-use crate::ir::program::add_input_vector;
+use roboprec::{add_input_vector, register_matrix_output, register_vector_output, analysis, Real, Config};
 
 use crate::{
     algorithms::{
@@ -11,15 +11,10 @@ use crate::{
             roarm_m2::{roarm_m2, roarm_m2_get_bounds},
         },
     },
-    analysis::{analysis::analysis, real::Real},
-    config::Config,
     helpers::{cos_extremes, sin_extremes},
-    ir::{
-        program::{register_matrix_output, register_vector_output},
-    },
 };
 
-pub(super) fn fk_7dof(config: Config) -> Result<()> {
+pub fn fk_7dof(config: Config) -> Result<()> {
     const DOF: usize = 7;
 
     let joint_bounds = panda_get_bounds();

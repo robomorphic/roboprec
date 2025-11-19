@@ -1,4 +1,4 @@
-use crate::types::{matrix::Matrix, vector::Vector};
+use roboprec::{Matrix, Vector};
 
 pub struct RobotInfo {
     pub n_joints: usize,

@@ -327,28 +327,28 @@ macro_rules! Vector {
     // Pattern for parentheses syntax with scalars (semicolon at end to distinguish)
     ([$($scalar:expr),+ $(,)?;]) => {
         {
-            $crate::types::vector::Vector::from_scalars("vector", vec![$(&$scalar),+])
+            $crate::Vector::from_scalars("vector", vec![$(&$scalar),+])
         }
     };
 
     // Pattern for parentheses syntax with f64 values
     ([$($val:expr),+ $(,)?]) => {
         {
-            $crate::types::vector::Vector::new("vector", vec![$($val),+])
+            $crate::Vector::new("vector", vec![$($val),+])
         }
     };
 
     // Pattern for bracket syntax
     [$($val:expr),+ $(,)?] => {
         {
-            $crate::types::vector::Vector::new("vector", vec![$($val),+])
+            $crate::Vector::new("vector", vec![$($val),+])
         }
     };
 
     // Fallback pattern for other expressions
     ($values:expr) => {
         {
-            $crate::types::vector::Vector::new("vector", $values)
+            $crate::Vector::new("vector", $values)
         }
     };
 }
@@ -358,7 +358,7 @@ macro_rules! Vector {
 macro_rules! vector_from_scalars {
     [$($scalar:expr),+ $(,)?] => {
         {
-            $crate::types::vector::Vector::from_scalars("vector", vec![$(&$scalar),+])
+            $crate::Vector::from_scalars("vector", vec![$(&$scalar),+])
         }
     };
 }

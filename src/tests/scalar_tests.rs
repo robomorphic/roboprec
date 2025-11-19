@@ -1,4 +1,5 @@
-use crate::{Scalar, analysis::real::Real, tests::test_wrapper::run_default_test};
+use roboprec::{Scalar, analysis::real::Real};
+use crate::tests::test_wrapper::run_default_test;
 
 #[test]
 fn test_scalar_new_constant() {

@@ -1,9 +1,7 @@
 use super::robot_info::RobotInfo;
 
-use crate::{
-    Matrix, Scalar, Vector, algorithms::robots::helper::rpy_to_matrix_from_trig_components,
-    analysis::real::Real,
-};
+use roboprec::{Matrix, Scalar, Vector, Real};
+use crate::algorithms::robots::helper::rpy_to_matrix_from_trig_components;
 
 // Daisy uses these values, therefore if we use more approximate values, we will get different results
 #[allow(clippy::approx_constant)]

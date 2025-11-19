@@ -44,8 +44,8 @@ fn test_arithmetic_precision() {
 
 /// Tests for arithmetic operations on scalars and matrices
 fn scalar_arithmetic_operations() {
-    let a = crate::Scalar!(8.0);
-    let b = crate::Scalar!(2.0);
+    let a = roboprec::Scalar!(8.0);
+    let b = roboprec::Scalar!(2.0);
 
     // Test all basic operations
     let add_result = &a + &b;
@@ -62,9 +62,9 @@ fn scalar_arithmetic_operations() {
 }
 
 fn scalar_arithmetic_chaining() {
-    let a = crate::Scalar!(2.0);
-    let b = crate::Scalar!(3.0);
-    let c = crate::Scalar!(4.0);
+    let a = roboprec::Scalar!(2.0);
+    let b = roboprec::Scalar!(3.0);
+    let c = roboprec::Scalar!(4.0);
 
     // Test complex expressions
     let result1 = &(&a + &b) * &c; // (2 + 3) * 4 = 20
@@ -77,8 +77,8 @@ fn scalar_arithmetic_chaining() {
 }
 
 fn matrix_arithmetic_operations() {
-    let m1 = crate::Matrix!([vec![1.0, 2.0], vec![3.0, 4.0]]);
-    let m2 = crate::Matrix!([vec![5.0, 6.0], vec![7.0, 8.0]]);
+    let m1 = roboprec::Matrix!([vec![1.0, 2.0], vec![3.0, 4.0]]);
+    let m2 = roboprec::Matrix!([vec![5.0, 6.0], vec![7.0, 8.0]]);
     // Test matrix creation works
     assert_eq!(m1.value_f64(), vec![vec![1.0, 2.0], vec![3.0, 4.0]]);
     assert_eq!(m2.value_f64(), vec![vec![5.0, 6.0], vec![7.0, 8.0]]);
@@ -102,8 +102,8 @@ fn matrix_arithmetic_operations() {
 
 fn matrix_arithmetic_edge_cases() {
     // Test with identity-like operations
-    let m = crate::Matrix!([vec![1.0, 0.0], vec![0.0, 1.0]]);
-    let zero = crate::Matrix!([vec![0.0, 0.0], vec![0.0, 0.0]]);
+    let m = roboprec::Matrix!([vec![1.0, 0.0], vec![0.0, 1.0]]);
+    let zero = roboprec::Matrix!([vec![0.0, 0.0], vec![0.0, 0.0]]);
 
     // let add_zero = &m + &zero;
     // assert_eq!(add_zero.value_f64(), m.value_f64());
@@ -118,25 +118,25 @@ fn matrix_arithmetic_edge_cases() {
 
 fn mixed_scalar_matrix_operations() {
     // Create matrix from scalar operations
-    let s1 = crate::Scalar!(2.0);
-    let s2 = crate::Scalar!(3.0);
+    let s1 = roboprec::Scalar!(2.0);
+    let s2 = roboprec::Scalar!(3.0);
     let s3 = &s1 + &s2; // 5.0
     let s4 = &s1 * &s2; // 6.0
 
-    let m1 = crate::Matrix!([s1, s2; s3, s4]);
+    let m1 = roboprec::Matrix!([s1, s2; s3, s4]);
     assert_eq!(m1.value_f64(), vec![vec![2.0, 3.0], vec![5.0, 6.0]]);
 
     // Use this matrix in operations
-    let m2 = crate::Matrix!([vec![1.0, 1.0], vec![1.0, 1.0]]);
+    let m2 = roboprec::Matrix!([vec![1.0, 1.0], vec![1.0, 1.0]]);
     let result = &m1 + &m2;
     assert_eq!(result.value_f64(), vec![vec![3.0, 4.0], vec![6.0, 7.0]]);
 }
 
 fn arithmetic_precision() {
     // Test operations that might have precision issues
-    let a = crate::Scalar!(0.1);
-    let b = crate::Scalar!(0.2);
-    let c = crate::Scalar!(0.3);
+    let a = roboprec::Scalar!(0.1);
+    let b = roboprec::Scalar!(0.2);
+    let c = roboprec::Scalar!(0.3);
 
     let sum = &a + &b;
     let diff = &sum - &c;

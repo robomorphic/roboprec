@@ -1,4 +1,4 @@
-use crate::{Matrix, Scalar};
+use roboprec::{Matrix, Scalar};
 
 // Creates rotation matrix from pre-calculated trigonometric components
 // RPY order is ZYX intrinsic: Yaw (Z), Pitch (Y), Roll (X)

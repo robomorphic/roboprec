@@ -1,4 +1,5 @@
-use crate::{Matrix, analysis::real::Real, tests::test_wrapper::run_default_test};
+use roboprec::{Matrix, analysis::real::Real};
+use crate::tests::test_wrapper::run_default_test;
 
 #[test]
 fn test_matrix_new_constant() {

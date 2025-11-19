@@ -530,7 +530,7 @@ macro_rules! Matrix {
     // Pattern for creating from constant values (array literals)
     ([$($row:expr),+ $(,)?]) => {
         {
-            $crate::types::matrix::Matrix::new("matrix", vec![$($row),+])
+            $crate::Matrix::new("matrix", vec![$($row),+])
         }
     };
 
@@ -539,14 +539,14 @@ macro_rules! Matrix {
         {
             let scalar_rows = vec![$(vec![$($scalar),+]),+];
             let scalars = scalar_rows.iter().map(|row| row.iter().collect()).collect();
-            $crate::types::matrix::Matrix::from_scalars("matrix", scalars)
+            $crate::Matrix::from_scalars("matrix", scalars)
         }
     };
 
     // Fallback pattern for other expressions (assume constants)
     ($values:expr) => {
         {
-            $crate::types::matrix::Matrix::new("matrix", $values)
+            $crate::Matrix::new("matrix", $values)
         }
     };
 }

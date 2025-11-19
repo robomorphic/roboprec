@@ -1,4 +1,4 @@
-use crate::ir::{helper::clear_all_names, program::clear_program};
+use roboprec::ir::{helper::clear_all_names, program::clear_program};
 use std::sync::{Mutex, OnceLock};
 
 // only one test should run at a time
@@ -46,7 +46,7 @@ where
 }
 
 // only going to be used in tests
-pub fn run_default_test_with_special_config<T>(test_func: T, _config: crate::ir::precision::Precision)
+pub fn run_default_test_with_special_config<T>(test_func: T, _config: roboprec::ir::precision::Precision)
 where
     T: FnOnce(),
 {

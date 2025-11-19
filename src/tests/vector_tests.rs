@@ -1,4 +1,5 @@
-use crate::{Scalar, Vector, tests::test_wrapper::run_default_test, vector_from_scalars};
+use roboprec::{Scalar, Vector};
+use crate::tests::test_wrapper::run_default_test;
 
 #[test]
 fn test_vector_new() {
@@ -325,13 +326,13 @@ fn vector_dot_product_single_element() {
 }
 
 fn vector_macro() {
-    let vec = Vector![1.0, 2.0, 3.0];
+    let vec = roboprec::Vector![1.0, 2.0, 3.0];
     assert_eq!(vec.size(), 3);
     assert_eq!(vec.value_f64(), vec![1.0, 2.0, 3.0]);
 }
 
 fn vector_macro_single_element() {
-    let vec = Vector![42.0];
+    let vec = roboprec::Vector![42.0];
     assert_eq!(vec.size(), 1);
     assert_eq!(vec.value_f64(), vec![42.0]);
 }
@@ -341,7 +342,7 @@ fn vector_from_scalars_macro() {
     let s2 = Scalar::new("s2", 2.0);
     let s3 = Scalar::new("s3", 3.0);
 
-    let vec = vector_from_scalars![s1, s2, s3];
+    let vec = roboprec::vector_from_scalars![s1, s2, s3];
     assert_eq!(vec.size(), 3);
     assert_eq!(vec.value_f64(), vec![1.0, 2.0, 3.0]);
 }

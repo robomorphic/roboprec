@@ -1,9 +1,7 @@
 use super::robot_info::RobotInfo;
 
-use crate::{
-    Matrix, Scalar, Vector, algorithms::robots::helper::rpy_to_matrix_from_trig_components,
-    analysis::real::Real,
-};
+use roboprec::{Matrix, Scalar, Vector, Real};
+use crate::algorithms::robots::helper::rpy_to_matrix_from_trig_components;
 
 // clippy is right, but I want to keep the constants as is to match Daisy and URDF values
 // We should change it in the future

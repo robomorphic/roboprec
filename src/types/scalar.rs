@@ -100,10 +100,10 @@ impl Scalar {
 #[macro_export]
 macro_rules! Scalar {
     // Pattern for creating from a constant value with auto-generated name
-    ($value:literal) => {{ $crate::types::scalar::Scalar::new("scalar", $value) }};
+    ($value:literal) => {{ $crate::Scalar::new("scalar", $value) }};
 
     // Pattern for creating from another scalar with auto-generated name
-    ($scalar:expr) => {{ $crate::types::scalar::Scalar::from_any("scalar", &$scalar) }};
+    ($scalar:expr) => {{ $crate::Scalar::from_any("scalar", &$scalar) }};
 }
 
 // TODO: make a similar change to vector and matrix macros
