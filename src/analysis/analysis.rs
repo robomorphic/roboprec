@@ -28,7 +28,7 @@ pub fn analysis(config: Config) -> Result<Program> {
 
     println!("Starting worst case analysis...");
     // create folder if not exist
-    let folder = &config.codegen_dir;
+    let folder = &config.output_dir;
     std::fs::create_dir_all(folder).unwrap();
     // TODO: call daisy here
     match generate_daisy_dsl(&program, &config) {
@@ -55,9 +55,9 @@ pub fn analysis(config: Config) -> Result<Program> {
     let daisy_directory = manifest_dir.join("daisy");
     let daisy_binary = daisy_directory.join("daisy");
 
-    let scala_file = config.codegen_dir
+    let scala_file = config.output_dir
         .join("codegen/daisy")
-        .join(format!("{}.scala", config.codegen_filename));
+        .join("codegen.scala");
     let scala_file = std::fs::canonicalize(scala_file)?;
 
     // before running, run mkdir daisy_directory + "output"
@@ -112,7 +112,7 @@ pub fn analysis(config: Config) -> Result<Program> {
     // Finally, we copy the codegen to our output directory and log the new file path to user
     // from daisy_directory + "output" + scala_file.name() to config.output_dir + scala_file.name()
     let input_file = daisy_directory.join("output").join("codegen.cpp"); // TODO: make this dynamic
-    let output_dir = config.codegen_dir.join("codegen/apfixed");
+    let output_dir = config.output_dir.join("codegen/apfixed");
     // generate output directory if not exist
     std::fs::create_dir_all(&output_dir)?;
     let output_file = output_dir.join("codegen.cpp"); // TODO: make this dynamic
@@ -121,7 +121,7 @@ pub fn analysis(config: Config) -> Result<Program> {
         &output_file,
     )?;
 
-    let output_dir = config.codegen_dir.join("analysis_data");
+    let output_dir = config.output_dir.join("analysis_data");
     std::fs::create_dir_all(&output_dir)?;
     // Write all ranges and all errors in output directory, too
     let ranges_output_file = output_dir.join("analysis_ranges.txt");
@@ -134,7 +134,7 @@ pub fn analysis(config: Config) -> Result<Program> {
     let duration = start_time.elapsed();
     println!("Total analysis time: {:?}", duration);
     println!("Logs are saved in {}", log_file_path.display());
-    println!("Codegen output is saved in {}", config.codegen_dir.join("codegen/").display());
+    println!("Codegen output is saved in {}", config.output_dir.join("codegen/").display());
     println!("Analysis data is saved in {}", output_dir.display());
 
     Ok(program)

@@ -249,7 +249,7 @@ pub fn parse_daisy_precisions<P: AsRef<Path>>(path: P, range_results: &DaisyRang
             }
         } else if value == "Float32" {
             Precision::Float32
-        } else if value == "Float64" {
+        } else if value == "Double" {
             Precision::Float64
         } else {
             anyhow::bail!(

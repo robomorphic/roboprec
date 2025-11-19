@@ -14,7 +14,7 @@ pub fn generate_daisy_dsl(program: &Program, config: &Config) -> Result<()> {
     info!("Generating Daisy DSL code...");
     let inputs = program.get_inputs();
     let body = program.get_body();
-    let func_name = &config.codegen_filename;
+    let func_name = "codegen";
 
     let mut generated_code = String::new();
 
@@ -171,9 +171,9 @@ pub fn generate_daisy_dsl(program: &Program, config: &Config) -> Result<()> {
     generated_code.push_str("}}}\n");
 
     // Create directory and write to file
-    let folder = config.codegen_dir.join("codegen/daisy");
+    let folder = config.output_dir.join("codegen/daisy");
     std::fs::create_dir_all(&folder).expect("Failed to create codegen directory for Daisy DSL");
-    let filename = folder.join(format!("{}.scala", config.codegen_filename));
+    let filename = folder.join("codegen.scala");
 
     let mut file = match std::fs::File::create(filename.clone()) {
         Ok(f) => f,

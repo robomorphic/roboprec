@@ -76,7 +76,7 @@ fn value_precision_to_str(value: &Real, precision: &Precision) -> String {
             format!("{}", scaled_value.nearest_integer())
         }
         Precision::Float32 | Precision::Float64 => {
-            panic!("C does not support floating point, fix and test first!")
+            format!("{}", value.to_f64()).to_string()
         }
     }
 }
@@ -91,7 +91,7 @@ pub fn generate_c(
     let inputs = program.get_inputs();
     let body = program.get_body();
     let outputs = program.get_outputs();
-    let func_name = &config.codegen_filename;
+    let func_name = "codegen";
 
     let mut generated_code = String::new();
 
@@ -303,9 +303,7 @@ pub fn generate_c(
                                         Precision::Float64,
                                         Precision::Float64,
                                     ) => {
-                                        panic!(
-                                            "C codegen does not support floating point, fix and test first!"
-                                        )
+                                        format!("({} + {})", opr1.name(), opr2.name())
                                     }
                                     _ => panic!(
                                         "Mixed types are not supported in C codegen, {:#?} + {:#?} are mixed",
@@ -358,9 +356,7 @@ pub fn generate_c(
                                         Precision::Float64,
                                         Precision::Float64,
                                     ) => {
-                                        panic!(
-                                            "C codegen does not support floating point, fix and test first!"
-                                        )
+                                        format!("({} - {})", opr1.name(), opr2.name())
                                     }
                                     _ => panic!(
                                         "Mixed types are not supported in C codegen, {:#?} - {:#?} are mixed",
@@ -421,9 +417,7 @@ pub fn generate_c(
                                         Precision::Float64,
                                         Precision::Float64,
                                     ) => {
-                                        panic!(
-                                            "C codegen does not support floating point, fix and test first!"
-                                        )
+                                        format!("({} * {})", opr1.name(), opr2.name())
                                     }
                                     _ => panic!(
                                         "Mixed types are not supported in C codegen, {:#?} - {:#?} are mixed",
@@ -472,9 +466,7 @@ pub fn generate_c(
                                         Precision::Float64,
                                         Precision::Float64,
                                     ) => {
-                                        panic!(
-                                            "C codegen does not support floating point, fix and test first!"
-                                        )
+                                        format!("({} / {})", opr1.name(), opr2.name())
                                     }
                                     _ => panic!(
                                         "Mixed types are not supported in C codegen, {:#?} - {:#?} are mixed",
@@ -537,9 +529,9 @@ pub fn generate_c(
 
     generated_code.push_str("}\n");
 
-    let folder = config.codegen_dir.join("codegen/C");
+    let folder = config.output_dir.join("codegen/C");
     std::fs::create_dir_all(&folder).expect("Failed to create codegen directory for C");
-    let filename = folder.join(format!("{}.cpp", config.codegen_filename));
+    let filename = folder.join("codegen.cpp");
     let mut file = match std::fs::File::create(filename.clone()) {
         Ok(f) => f,
         Err(e) => anyhow::bail!("Unable to create file {}: {}", filename.display(), e),
