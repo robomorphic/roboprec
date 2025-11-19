@@ -90,7 +90,7 @@ pub fn generate_c_with_conversion(program: &Program, precisions: &IndexMap<Strin
     let body = program.get_body();
     let outputs = program.get_outputs();
     let config = CONFIG.read().unwrap().clone();
-    let func_name = &config.codegen_filename;
+    let func_name = crate::config::CODEGEN_FILENAME;
 
     let mut generated_code = String::new();
 
@@ -634,9 +634,9 @@ pub fn generate_c_with_conversion(program: &Program, precisions: &IndexMap<Strin
 
     generated_code.push_str("}\n");
 
-    let folder = format!("{}/C", config.codegen_dir);
+    let folder = format!("{}/C", crate::config::CODEGEN_DIR);
     std::fs::create_dir_all(&folder).expect("Failed to create codegen directory for C");
-    let filename = format!("{}/{}_with_conversion.cpp", folder, config.codegen_filename);
+    let filename = format!("{}/{}_with_conversion.cpp", folder, crate::config::CODEGEN_FILENAME);
     let mut file = match std::fs::File::create(filename.clone()) {
         Ok(f) => f,
         Err(e) => anyhow::bail!("Unable to create file {}: {}", filename, e),

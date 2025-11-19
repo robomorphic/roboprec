@@ -3,8 +3,6 @@ use log::LevelFilter;
 use once_cell::sync::OnceCell;
 use std::path::PathBuf;
 
-use crate::config::CONFIG;
-
 static LOG_FILE_PATH: OnceCell<PathBuf> = OnceCell::new();
 
 /// Configures the logger to write to a timestamped file in the `.log` directory and returns the file path.
@@ -26,11 +24,7 @@ pub fn setup_logger() -> Result<PathBuf, fern::InitError> {
         format!(".log/{}.log", Local::now().format("%Y-%m-%d_%H-%M-%S"))
     };
 
-    let log_level = if CONFIG.read().unwrap().verbose {
-        LevelFilter::Debug
-    } else {
-        LevelFilter::Info
-    };
+    let log_level = LevelFilter::Info;
 
     // Base logging configuration
     let base_config = fern::Dispatch::new()

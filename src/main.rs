@@ -10,6 +10,17 @@ mod types;
 
 use anyhow::{Context, Result};
 use std::vec;
+use clap::Parser;
+use crate::ir::precision::Precision;
+use std::str::FromStr;
+
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    /// Precision format (e.g., Fixed16-8, Float32, Float64)
+    #[arg(short, long)]
+    precision: String,
+}
 
 // Re-export the types and macros at the crate root
 pub use types::matrix::Matrix;
@@ -172,6 +183,10 @@ fn rnea_deriv_7dof() -> Result<()> {
 }
 
 fn main() -> Result<()> {
+    let args = Args::parse();
+    let precision = Precision::from_str(&args.precision).map_err(|e| anyhow::anyhow!(e))?;
+    config::init_config(precision);
+
     fk()?;
     //rnea_deriv()?;
     //rnea_deriv7dof();

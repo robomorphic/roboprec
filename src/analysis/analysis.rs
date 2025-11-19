@@ -29,7 +29,7 @@ pub fn analysis_main() -> Result<Program> {
 
     println!("Starting worst case analysis...");
     // create folder if not exist
-    let folder = CONFIG.read().unwrap().codegen_dir.clone();
+    let folder = crate::config::CODEGEN_DIR;
     std::fs::create_dir_all(folder).unwrap();
     // TODO: call daisy here
     match generate_daisy_dsl(&program) {
@@ -54,9 +54,9 @@ pub fn analysis_main() -> Result<Program> {
     let daisy_directory = manifest_dir.join("daisy");
     let daisy_binary = daisy_directory.join("daisy");
 
-    let scala_file = std::path::Path::new(&config.codegen_dir)
+    let scala_file = std::path::Path::new(crate::config::CODEGEN_DIR)
         .join("daisy")
-        .join(format!("{}.scala", config.codegen_filename));
+        .join(format!("{}.scala", crate::config::CODEGEN_FILENAME));
     let scala_file = std::fs::canonicalize(scala_file)?;
 
     // before running, run mkdir daisy_directory + "output"
