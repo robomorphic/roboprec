@@ -6,7 +6,7 @@ A verification-aware compiler framework for generating numerically-guaranteed, h
 
 RoboPrec takes robotics algorithms written in Rust and generates optimized C code with **provable numerical accuracy guarantees**. It combines a Rust frontend with formal numerical analysis (via [Daisy](https://github.com/malyzajko/daisy)) to produce verified fixed-point or floating-point implementations.
 
-**Key Results** (from [our IEEE RA-L 2025 paper](paper/)):
+**Key Results** (from our IEEE RA-L 2025 paper):
 - Up to **122× faster** than `double` on embedded platforms (RP2040)
 - **2.5×-30.4× better accuracy** than `float` using 32-bit fixed-point
 - Competitive or faster than `double` on desktop CPUs for some kernels
