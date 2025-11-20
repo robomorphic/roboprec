@@ -12,7 +12,8 @@ fn main() {
 
     // 2. Tell Cargo when to re-run this script.
     // Re-run if any Scala source files or the build.sbt changes.
-    println!("cargo:rerun-if-changed=daisy/");
+    println!("cargo:rerun-if-changed=daisy/src/");
+    println!("cargo:rerun-if-changed=daisy/build.sbt");
 
     // 3. Check if sbt is installed
     if Command::new("sbt").arg("--version").output().is_err() {
