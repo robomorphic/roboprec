@@ -92,7 +92,7 @@ Precision::Fixed { total_bits: 32, fractional_bits: 16 }
 # Run with specific precision
 cargo run --release -- --precision Float64
 cargo run --release -- --precision Fixed32
-cargo run --release -- --precision Fixed16-8  # 16 total bits, 8 fractional
+cargo run --release -- --precision Fixed16-8  # 16 integer, 8 fractional bits
 ```
 
 ## Documentation
