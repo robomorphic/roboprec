@@ -1,4 +1,4 @@
-use roboprec::{Matrix, analysis::real::Real};
+use roboprec::{Matrix, Scalar, analysis::real::Real};
 use crate::tests::test_wrapper::run_default_test;
 
 #[test]
@@ -248,10 +248,10 @@ fn matrix_new_constant() {
 }
 
 fn matrix_from_scalars() {
-    let s1 = crate::Scalar!(1.0);
-    let s2 = crate::Scalar!(2.0);
-    let s3 = crate::Scalar!(3.0);
-    let s4 = crate::Scalar!(4.0);
+    let s1 = Scalar!(1.0);
+    let s2 = Scalar!(2.0);
+    let s3 = Scalar!(3.0);
+    let s4 = Scalar!(4.0);
 
     let matrix = Matrix::from_scalars("test", vec![vec![&s1, &s2], vec![&s3, &s4]]);
     let expected = vec![vec![1.0, 2.0], vec![3.0, 4.0]];
@@ -288,16 +288,16 @@ fn matrix_from_matrices_vertical() {
 }
 
 fn matrix_macro_constant_array() {
-    let matrix = crate::Matrix!([vec![1.0, 2.0], vec![3.0, 4.0]]);
+    let matrix = Matrix!([vec![1.0, 2.0], vec![3.0, 4.0]]);
     let expected = vec![vec![1.0, 2.0], vec![3.0, 4.0]];
     assert_eq!(matrix.value_f64(), expected);
 }
 
 fn matrix_macro_from_scalars() {
-    let s1 = crate::Scalar!(1.0);
-    let s2 = crate::Scalar!(2.0);
-    let s3 = crate::Scalar!(3.0);
-    let s4 = crate::Scalar!(4.0);
+    let s1 = Scalar!(1.0);
+    let s2 = Scalar!(2.0);
+    let s3 = Scalar!(3.0);
+    let s4 = Scalar!(4.0);
 
     let matrix = crate::Matrix!([s1, s2; s3, s4]);
     let expected = vec![vec![1.0, 2.0], vec![3.0, 4.0]];
@@ -398,10 +398,10 @@ fn matrix_arithmetic_subtract() {
 // }
 
 fn matrix_scalar_combinations() {
-    let s1 = crate::Scalar!(2.0);
-    let s2 = crate::Scalar!(3.0);
+    let s1 = Scalar!(2.0);
+    let s2 = Scalar!(3.0);
     let s3 = &s1 + &s2; // s3 = 5.0
-    let s4 = crate::Scalar!(1.0);
+    let s4 = Scalar!(1.0);
 
     let matrix = crate::Matrix!([s1, s2; s3, s4]);
     let expected = vec![vec![2.0, 3.0], vec![5.0, 1.0]];

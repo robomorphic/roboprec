@@ -11,8 +11,6 @@ pub enum OprUnary {
     AssignNoOpt,
     Index { index: Vec<usize> }, // Indexing operation
     Transpose,                   // Transpose operation (for matrices)
-    Sine,
-    Cosine,
 }
 
 #[derive(Debug, Clone)]

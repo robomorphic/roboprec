@@ -126,8 +126,6 @@ pub fn generate_daisy_dsl(program: &Program, config: &Config) -> Result<()> {
                     OprUnary::Assign | OprUnary::AssignNoOpt => {
                         format!("val {} = {}\n", var_id.name(), opr1.name())
                     }
-                    OprUnary::Sine => format!("val {} = sin({})\n", var_id.name(), opr1.name()),
-                    OprUnary::Cosine => format!("val {} = sin({})\n", var_id.name(), opr1.name()),
                     _ => anyhow::bail!("The operation {:#?} should have been unrolled", rhs),
                 },
                 Opr::Binary {

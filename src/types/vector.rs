@@ -11,13 +11,52 @@ use crate::{
     types::scalar::Scalar,
 };
 
+/// A column vector with tracked operations for numerical analysis.
+///
+/// Vectors represent ordered sequences of values (typically used for joint angles,
+/// positions, forces, etc. in robotics). All operations build an expression tree
+/// for later analysis.
+///
+/// # Examples
+///
+/// ```rust
+/// use roboprec::*;
+///
+/// // Create from constants
+/// let v1 = Vector![1.0, 2.0, 3.0];
+/// let v2 = Vector![4.0, 5.0, 6.0];
+///
+/// // Dot product
+/// let dot = v1.dot(&v2);  // 1*4 + 2*5 + 3*6 = 32
+///
+/// // Cross product (3D only)
+/// let cross = v1.cross(&v2);
+///
+/// // Access elements
+/// let x = v1.at(0);  // Returns Scalar
+/// ```
 pub struct Vector {
-    pub id: Identifier, // Name of the vector, guaranteed to be unique over the whole program
-    pub value: Vec<Real>, // Values of the vector, computed with default values
+    /// Unique identifier for this vector in the program
+    pub id: Identifier,
+    /// Computed values using default inputs (for validation)
+    pub value: Vec<Real>,
 }
 
 impl Vector {
-    /// Create a vector from f64 values
+    /// Creates a new vector from f64 values.
+    ///
+    /// # Arguments
+    /// * `name` - Name prefix for the vector
+    /// * `values` - Element values as f64
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use roboprec::*;
+    ///
+    /// let v = Vector::new("my_vec", vec![1.0, 2.0, 3.0]);
+    /// let v = Vector![1.0, 2.0, 3.0];  // Preferred: use macro
+    /// ```
     pub fn new(name: &str, values: Vec<f64>) -> Self {
         let rational_values: Vec<Real> = values.into_iter().map(Real::from_f64).collect();
         Self::new_rational(name, rational_values)
@@ -38,46 +77,6 @@ impl Vector {
         Self {
             id: new_id,
             value: self.value.clone(),
-        }
-    }
-
-    pub fn sin(&self) -> Self {
-        let new_id = create_unary_vector_expr(
-            format!("{}_sin", self.id.name).as_str(),
-            self.id.clone(),
-            OprUnary::Sine,
-        );
-        let sine_values: Vec<Real> = self
-            .value
-            .iter()
-            .map(|v| {
-                let sine_value = v.to_f64().sin();
-                Real::from_f64(sine_value)
-            })
-            .collect();
-        Self {
-            id: new_id,
-            value: sine_values,
-        }
-    }
-
-    pub fn cos(&self) -> Self {
-        let new_id = create_unary_vector_expr(
-            format!("{}_cos", self.id.name).as_str(),
-            self.id.clone(),
-            OprUnary::Cosine,
-        );
-        let cosine_values: Vec<Real> = self
-            .value
-            .iter()
-            .map(|v| {
-                let cosine_value = v.to_f64().cos();
-                Real::from_f64(cosine_value)
-            })
-            .collect();
-        Self {
-            id: new_id,
-            value: cosine_values,
         }
     }
 

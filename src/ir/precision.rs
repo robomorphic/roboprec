@@ -2,13 +2,59 @@ use serde::{Deserialize, Deserializer, Serialize};
 use std::fmt;
 use std::str::FromStr;
 
+/// Numerical precision specification for code generation.
+///
+/// Determines the datatype used in generated C code and guides the
+/// numerical analysis.
+///
+/// # Variants
+///
+/// * `Float32` - IEEE 754 single precision (32-bit float)
+/// * `Float64` - IEEE 754 double precision (64-bit double)
+/// * `Fixed` - Fixed-point arithmetic with configurable bit allocation
+///
+/// # Fixed-Point
+///
+/// For fixed-point, two modes are available:
+///
+/// * **Manual**: Specify exact fractional bits (e.g., `fractional_bits: 16`)
+/// * **Auto-optimize**: Set `fractional_bits: -1` to let RoboPrec determine
+///   optimal bit allocation based on range analysis
+///
+/// # Examples
+///
+/// ```rust
+/// use roboprec::Precision;
+/// use std::str::FromStr;
+///
+/// // Floating-point
+/// let p = Precision::Float64;
+/// let p = Precision::Float32;
+///
+/// // Fixed-point with auto-optimization (recommended)
+/// let p = Precision::Fixed { total_bits: 32, fractional_bits: -1 };
+///
+/// // Fixed-point with manual allocation, uniform precision is faster to compute because it requires less shift operations
+/// let p = Precision::Fixed { total_bits: 32, fractional_bits: 16 };
+///
+/// // From string (for CLI/config files)
+/// let p = Precision::from_str("Float64").unwrap();
+/// let p = Precision::from_str("Fixed32").unwrap();      // Auto-optimize
+/// let p = Precision::from_str("Fixed16-8").unwrap();   // 16 integer, 8 fractional bits
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub enum Precision {
+    /// Fixed-point arithmetic
+    ///
+    /// * `total_bits`: Total bit width (e.g., 16, 32, 64)
+    /// * `fractional_bits`: Fractional bits, or -1 for auto-optimization
     Fixed {
         total_bits: i32,
         fractional_bits: i32,
     },
+    /// IEEE 754 single precision (32-bit)
     Float32,
+    /// IEEE 754 double precision (64-bit)
     Float64,
 }
 

@@ -10,14 +10,52 @@ use crate::{
     types::{scalar::Scalar, vector::Vector},
 };
 
+/// A 2D matrix with tracked operations for numerical analysis.
+///
+/// Matrices are commonly used for transformations, Jacobians, and mass/inertia
+/// matrices in robotics. All operations build an expression tree for analysis.
+///
+/// # Examples
+///
+/// ```rust
+/// use roboprec::*;
+///
+/// // From constant values
+/// let M = Matrix!([[1.0, 2.0], [3.0, 4.0]]);
+///
+/// // Matrix multiplication
+/// let C = &M.matmul(&I);
+///
+/// // Matrix-vector multiplication
+/// let v = Vector![1.0, 2.0];
+/// let result = &M.matmul_vec(&v);
+///
+/// // Access elements
+/// let elem = M.at(0, 1);  // Returns Scalar
+/// ```
 #[derive(Clone, Debug)]
 pub struct Matrix {
-    pub id: Identifier, // Name of the matrix, guaranteed to be unique over the whole program
-    pub value: Vec<Vec<Real>>, // Values of the matrix, computed with default values
+    /// Unique identifier for this matrix in the program
+    pub id: Identifier,
+    /// Computed values using default inputs (for validation)
+    pub value: Vec<Vec<Real>>,
 }
 
 impl Matrix {
-    /// This function will be only used when the matrix is constant.
+    /// Creates a new matrix from f64 values.
+    ///
+    /// # Arguments
+    /// * `name` - Name prefix for the matrix
+    /// * `values` - Element values as nested Vec (row-major order)
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use roboprec::*;
+    ///
+    /// let M = Matrix::new("my_mat", vec![vec![1.0, 2.0], vec![3.0, 4.0]]);
+    /// let M = Matrix!([[1.0, 2.0], [3.0, 4.0]]);  // Preferred: use macro
+    /// ```
     pub fn new(name: &str, values: Vec<Vec<f64>>) -> Self {
         let rational_values: Vec<Vec<Real>> = values
             .into_iter()
@@ -40,56 +78,6 @@ impl Matrix {
         Self {
             id: new_id,
             value: self.value.clone(),
-        }
-    }
-
-    pub fn sin(&self) -> Self {
-        let new_id = create_unary_matrix_expr(
-            format!("{}_sin", self.id.name).as_str(),
-            self.id.clone(),
-            OprUnary::Sine,
-        );
-        // Compute the sine value using f64 for simplicity
-        let sine_values: Vec<Vec<Real>> = self
-            .value
-            .iter()
-            .map(|row| {
-                row.iter()
-                    .map(|v| {
-                        let sine_value = v.to_f64().sin();
-                        Real::from_f64(sine_value)
-                    })
-                    .collect()
-            })
-            .collect();
-        Self {
-            id: new_id,
-            value: sine_values,
-        }
-    }
-
-    pub fn cos(&self) -> Self {
-        let new_id = create_unary_matrix_expr(
-            format!("{}_cos", self.id.name).as_str(),
-            self.id.clone(),
-            OprUnary::Cosine,
-        );
-        // Compute the cosine value using f64 for simplicity
-        let cosine_values: Vec<Vec<Real>> = self
-            .value
-            .iter()
-            .map(|row| {
-                row.iter()
-                    .map(|v| {
-                        let cosine_value = v.to_f64().cos();
-                        Real::from_f64(cosine_value)
-                    })
-                    .collect()
-            })
-            .collect();
-        Self {
-            id: new_id,
-            value: cosine_values,
         }
     }
 

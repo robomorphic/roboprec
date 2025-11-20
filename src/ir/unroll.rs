@@ -221,9 +221,7 @@ pub fn unroll_ir(program: &Program) -> Program {
                                     }
                                     OprUnary::Assign
                                     | OprUnary::Neg
-                                    | OprUnary::AssignNoOpt
-                                    | OprUnary::Sine
-                                    | OprUnary::Cosine => {
+                                    | OprUnary::AssignNoOpt => {
                                         // In this case the result id is also a vector,
                                         // so we need to create new ids for that, too
                                         let mut all_ids = vec![];
@@ -278,9 +276,6 @@ pub fn unroll_ir(program: &Program) -> Program {
                                                     OprUnary::Index { .. } => {
                                                         panic!("You shouldn't be here!")
                                                     }
-                                                    OprUnary::Sine | OprUnary::Cosine => {
-                                                        panic!("You shouldn't be here!")
-                                                    }
                                                 };
                                                 new_body.push(new_expr);
                                             }
@@ -298,9 +293,7 @@ pub fn unroll_ir(program: &Program) -> Program {
                                     }
                                     OprUnary::Assign
                                     | OprUnary::Neg
-                                    | OprUnary::AssignNoOpt
-                                    | OprUnary::Sine
-                                    | OprUnary::Cosine => {
+                                    | OprUnary::AssignNoOpt => {
                                         let mut all_ids = vec![];
                                         // create new ids for the result, rest is easy
                                         for (i, row) in corresponding_ids.iter().enumerate() {
@@ -320,15 +313,6 @@ pub fn unroll_ir(program: &Program) -> Program {
                                                             opr: Opr::Unary {
                                                                 opr1: id.clone(),
                                                                 opr_type: opr_type.clone(), // assign or neg
-                                                            },
-                                                        }
-                                                    }
-                                                    OprUnary::Sine | OprUnary::Cosine => {
-                                                        Expr::Let {
-                                                            id: new_id,
-                                                            opr: Opr::Unary {
-                                                                opr1: id.clone(),
-                                                                opr_type: opr_type.clone(), // sine or cosine
                                                             },
                                                         }
                                                     }

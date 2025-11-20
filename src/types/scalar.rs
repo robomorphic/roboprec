@@ -9,14 +9,49 @@ use crate::{
     },
 };
 
+/// A scalar value with tracked operations for numerical analysis.
+///
+/// `Scalar` represents a single numerical value that RoboPrec tracks through
+/// your computation. All operations on scalars build an expression tree that
+/// is later analyzed for range and error bounds.
+///
+/// # Examples
+///
+/// ```rust
+/// use roboprec::*;
+///
+/// // Create from constant
+/// let x = Scalar!(2.0);
+///
+/// // Arithmetic operations
+/// let y = &x * &x;  // x²
+/// let z = &y + &Scalar!(1.0);  // x² + 1
+/// ```
 #[derive(Clone, Debug)]
 pub struct Scalar {
-    pub id: Identifier, // Name of the scalar, guaranteed to be unique over the whole program
-    pub value: Real,    // Value of the scalar, computed with default values
+    /// Unique identifier for this scalar in the program
+    pub id: Identifier,
+    /// Computed value using default inputs (for validation)
+    pub value: Real,
 }
 
 impl Scalar {
-    /// This function will be only used when the scalar is constant.
+    /// Creates a new scalar from a constant f64 value.
+    ///
+    /// This is typically used via the [`Scalar!`] macro rather than directly.
+    ///
+    /// # Arguments
+    /// * `name` - Name prefix for the scalar (auto-generated unique name)
+    /// * `value` - Constant numerical value
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use roboprec::*;
+    ///
+    /// let pi = Scalar::new("pi", 3.14159);
+    /// let two = Scalar!(2.0);  // Preferred: use macro
+    /// ```
     pub fn new(name: &str, value: f64) -> Self {
         let rational_value = Real::from_f64(value);
         let new_id = create_scalar_constant(name, Real::from_f64(value));
@@ -26,12 +61,18 @@ impl Scalar {
         }
     }
 
+    /// Creates a new scalar from an arbitrary-precision rational value.
+    ///
+    /// Used internally when exact rational arithmetic is needed.
     pub fn new_rational(name: &str, value: Real) -> Self {
         let new_id = create_scalar_constant(name, value.clone());
         Self { id: new_id, value }
     }
 
-    // This function simply redefines a new value to this scalar.
+    /// Redefines the scalar with a new name (creates an assignment operation).
+    ///
+    /// This creates a new scalar that is identical to the current one but with
+    /// a different name in the expression tree.
     pub fn define(&mut self, new_name: String) -> Self {
         let new_id = create_unary_scalar_expr(&new_name, self.id.clone(), OprUnary::AssignNoOpt);
         Self {
@@ -40,41 +81,16 @@ impl Scalar {
         }
     }
 
-    pub fn sin(&self) -> Self {
-        let new_id = create_unary_scalar_expr(
-            format!("{}_sin", self.id.name).as_str(),
-            self.id.clone(),
-            OprUnary::Sine,
-        );
-        // Compute the sine value using f64 for simplicity
-        let sine_value = self.value.to_f64().sin();
-        let rational_value = Real::from_f64(sine_value);
-        Self {
-            id: new_id,
-            value: rational_value,
-        }
-    }
-
-    pub fn cos(&self) -> Self {
-        let new_id = create_unary_scalar_expr(
-            format!("{}_cos", self.id.name).as_str(),
-            self.id.clone(),
-            OprUnary::Cosine,
-        );
-        // Compute the cosine value using f64 for simplicity
-        let cosine_value = self.value.to_f64().cos();
-        let rational_value = Real::from_f64(cosine_value);
-        Self {
-            id: new_id,
-            value: rational_value,
-        }
-    }
-
+    /// Returns the scalar's value as an f64 for testing/validation.
+    ///
+    /// Note: This is the value computed with default inputs, not the analyzed result.
     pub fn value_f64(&self) -> f64 {
         self.value.to_f64()
     }
 
-    /// Create a scalar from another scalar using the Construct operation
+    /// Creates a scalar from another scalar (identity operation).
+    ///
+    /// Used internally for constructing scalars from existing values.
     pub fn from_scalar(name: &str, scalar: &Scalar) -> Self {
         let id = scalar.id.clone();
         let new_id = create_construct_scalar_expr(name, id);
@@ -85,18 +101,30 @@ impl Scalar {
         Self { id: new_id, value }
     }
 
-    /// Generic constructor that accepts either a reference to a `Scalar` or a reference to an
-    /// f64; implemented via the `IntoScalarValue` trait below. This lets callers write a single
-    /// call that accepts both kinds of inputs.
+    /// Generic constructor accepting either a `Scalar` reference or an f64 reference.
+    ///
+    /// This enables flexible construction via the [`Scalar!`] macro.
     pub fn from_any<T: IntoScalarValue>(name: &str, t: T) -> Self {
         t.into_scalar_with_name(name)
     }
 }
 
-/// Macro to create a scalar from a constant value or from another scalar
-/// Usage:
-///   Scalar!(3.14) - creates from constant with auto-generated name
-///   Scalar!(other_scalar) - creates from another scalar with auto-generated name
+/// Creates a scalar from a constant value or another scalar.
+///
+/// This is the preferred way to create scalars in RoboPrec code.
+///
+/// # Examples
+///
+/// ```rust
+/// use roboprec::*;
+///
+/// // From constant
+/// let x = Scalar!(2.0);
+/// let pi = Scalar!(3.14159);
+///
+/// // From another scalar
+/// let y = Scalar!(x);
+/// ```
 #[macro_export]
 macro_rules! Scalar {
     // Pattern for creating from a constant value with auto-generated name
@@ -106,8 +134,9 @@ macro_rules! Scalar {
     ($scalar:expr) => {{ $crate::Scalar::from_any("scalar", &$scalar) }};
 }
 
-// TODO: make a similar change to vector and matrix macros
-/// Helper trait used by `from_any` to allow passing either `&Scalar` or `&f64`.
+/// Helper trait for flexible scalar construction.
+///
+/// Allows [`Scalar::from_any`] to accept either `&Scalar` or `&f64`.
 pub trait IntoScalarValue {
     fn into_scalar_with_name(self, name: &str) -> Scalar;
 }

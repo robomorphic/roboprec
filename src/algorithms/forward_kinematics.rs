@@ -195,6 +195,7 @@ pub struct FKResult {
     pub all_a: Vec<Vector>,
 }
 
+#[allow(dead_code)]
 pub fn forward_kinematics(
     qcos: Vector,
     qsin: Vector,

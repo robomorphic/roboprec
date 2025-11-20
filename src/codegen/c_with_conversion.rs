@@ -1,7 +1,6 @@
 use anyhow::Result;
 use core::panic;
 use indexmap::IndexMap;
-use log::error;
 use log::info;
 use std::io::Write;
 
@@ -223,24 +222,6 @@ pub fn generate_c_with_conversion(
                             format!("-({})", opr1.name())
                         }
                         OprUnary::Assign | OprUnary::AssignNoOpt => opr1.name().to_string(),
-                        OprUnary::Sine => {
-                            if let Precision::Fixed { .. } = precision {
-                                generated_code.push_str(
-                                    "   // Sine with fixed precision is not supported in C codegen",
-                                );
-                                error!("Sine with fixed precision is not supported in C codegen");
-                            };
-                            format!("sin({})", opr1.name())
-                        }
-                        OprUnary::Cosine => {
-                            if let Precision::Fixed { .. } = precision {
-                                generated_code.push_str(
-                                        "   // Cosine with fixed precision is not supported in C codegen"  
-                                    );
-                                error!("Cosine with fixed precision is not supported in C codegen");
-                            };
-                            format!("cos({})", opr1.name())
-                        }
                         _ => {
                             panic!("The operation {:#?} should have been unrolled", rhs)
                         }

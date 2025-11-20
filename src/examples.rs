@@ -14,6 +14,7 @@ use crate::{
     helpers::{cos_extremes, sin_extremes},
 };
 
+#[allow(dead_code)]
 pub fn fk_7dof(config: Config) -> Result<()> {
     const DOF: usize = 7;
 
