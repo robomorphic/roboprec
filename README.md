@@ -13,11 +13,11 @@ RoboPrec takes robotics algorithms written in Rust and generates optimized C cod
 
 ## Features
 
-- 🔒 **Formal Guarantees**: Static analysis provides worst-case error bounds
-- ⚡ **High Performance**: Optimized fixed-point code for embedded systems
-- 🎯 **Mixed Precision**: Automatic or manual precision selection per variable
-- 🤖 **Robotics-Ready**: Built-in support for kinematics, dynamics (RNEA), and derivatives
-- 🔧 **Easy Integration**: Generates portable C code for any platform
+- **Formal Guarantees**: Static analysis provides worst-case error bounds
+- **High Performance**: Optimized fixed-point code for embedded systems
+- **Mixed Precision**: Automatic or manual precision selection per variable
+- **Robotics-Ready**: Built-in support for kinematics, dynamics (RNEA), and derivatives
+- **Easy Integration**: Generates portable C code for any platform
 
 ## Installation
 
