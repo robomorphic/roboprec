@@ -95,17 +95,10 @@ cargo run --release -- --precision Fixed32
 cargo run --release -- --precision Fixed16-8  # 16 integer, 8 fractional bits
 ```
 
-## Documentation
-
-Build and view the API documentation:
-
-```bash
-cargo doc --open
-```
-
 For more information:
 - **Website**: [robomorphic.github.io/roboprec](https://robomorphic.github.io/roboprec_website)
 - **Examples**: See `src/algorithms/` for robotics algorithms, and `examples.rs` for how to use them.
+- Want to reproduce results from the paper? Please see: [https://github.com/alpylmz/RoboPrec](https://github.com/alpylmz/RoboPrec)
 
 ## Supported Algorithms
 
