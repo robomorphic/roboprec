@@ -30,7 +30,7 @@ RoboPrec takes robotics algorithms written in Rust and generates optimized C cod
 ### Quick Start
 
 ```bash
-git clone https://github.com/robomorphic/roboprec
+git clone https://github.com/robomorphic/roboprec --recursive
 cd roboprec
 
 # Build RoboPrec
