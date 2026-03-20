@@ -21,7 +21,8 @@ use crate::{
 /// use roboprec::*;
 ///
 /// // From constant values
-/// let M = Matrix!([[1.0, 2.0], [3.0, 4.0]]);
+/// let M = Matrix!([Scalar!(1.0), Scalar!(2.0); Scalar!(3.0), Scalar!(4.0)]);
+/// let I = Matrix!([Scalar!(5.0), Scalar!(6.0); Scalar!(7.0), Scalar!(8.0)]);
 ///
 /// // Matrix multiplication
 /// let C = &M.matmul(&I);
@@ -54,7 +55,7 @@ impl Matrix {
     /// use roboprec::*;
     ///
     /// let M = Matrix::new("my_mat", vec![vec![1.0, 2.0], vec![3.0, 4.0]]);
-    /// let M = Matrix!([[1.0, 2.0], [3.0, 4.0]]);  // Preferred: use macro
+    /// let M = Matrix!([Scalar!(1.0), Scalar!(2.0); Scalar!(3.0), Scalar!(4.0)]);  // Preferred: use macro
     /// ```
     pub fn new(name: &str, values: Vec<Vec<f64>>) -> Self {
         let rational_values: Vec<Vec<Real>> = values

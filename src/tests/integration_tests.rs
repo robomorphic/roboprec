@@ -1,4 +1,4 @@
-use crate::Scalar;
+use roboprec::Scalar;
 use crate::tests::test_wrapper::run_default_test;
 
 #[test]
@@ -38,10 +38,10 @@ fn test_arithmetic_with_constructed_elements() {
 
 fn scalar_matrix_integration() {
     // Create scalars using different methods
-    let s1 = crate::Scalar!(1.0);
+    let s1 = roboprec::Scalar!(1.0);
     let s2 = Scalar::new("s2", 2.0);
-    let s3 = crate::Scalar!(s1); // Copy from s1
-    let s4 = &s2 * &crate::Scalar!(2.0); // s4 = 4.0
+    let s3 = Scalar!(s1); // Copy from s1
+    let s4 = &s2 * &Scalar!(2.0); // s4 = 4.0
 
     // Create matrix from these scalars
     let matrix = crate::Matrix!([s1, s2; s3, s4]);
@@ -51,10 +51,10 @@ fn scalar_matrix_integration() {
 
 fn matrix_operations_with_scalars() {
     // Create scalars for matrix construction
-    let a = crate::Scalar!(1.0);
-    let b = crate::Scalar!(2.0);
-    let c = crate::Scalar!(3.0);
-    let d = crate::Scalar!(4.0);
+    let a = Scalar!(1.0);
+    let b = Scalar!(2.0);
+    let c = Scalar!(3.0);
+    let d = Scalar!(4.0);
 
     // Create matrices from scalars
     let m1 = crate::Matrix!([a, b; c, d]);
@@ -84,15 +84,15 @@ fn complex_matrix_concatenation() {
 
 fn mixed_construction_patterns() {
     // Mix constants and scalars
-    let s1 = crate::Scalar!(10.0);
-    let s2 = crate::Scalar!(20.0);
+    let s1 = Scalar!(10.0);
+    let s2 = Scalar!(20.0);
 
     // Matrix from constants
     let m_const = crate::Matrix!([vec![1.0, 2.0], vec![3.0, 4.0]]);
 
     // Matrix from scalars
-    let s3 = crate::Scalar!(30.0);
-    let s4 = crate::Scalar!(40.0);
+    let s3 = Scalar!(30.0);
+    let s4 = Scalar!(40.0);
     let m_scalar = crate::Matrix!([s1, s2; s3, s4]);
 
     // Concatenate them
@@ -103,8 +103,8 @@ fn mixed_construction_patterns() {
 
 fn arithmetic_with_constructed_elements() {
     // Create scalars through arithmetic
-    let a = crate::Scalar!(5.0);
-    let b = crate::Scalar!(3.0);
+    let a = Scalar!(5.0);
+    let b = Scalar!(3.0);
     let sum = &a + &b; // 8.0
     let diff = &a - &b; // 2.0
     let prod = &a * &b; // 15.0

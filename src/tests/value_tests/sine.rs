@@ -1,4 +1,5 @@
-use crate::{Scalar, tests::test_wrapper::run_default_test};
+use roboprec::Scalar;
+use crate::tests::test_wrapper::run_default_test;
 
 #[test]
 fn test_sine() {

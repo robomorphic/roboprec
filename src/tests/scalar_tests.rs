@@ -111,13 +111,13 @@ fn scalar_from_scalar() {
 }
 
 fn scalar_macro_constant() {
-    let scalar = crate::Scalar!(5.0);
+    let scalar = Scalar!(5.0);
     assert_eq!(scalar.value_f64(), 5.0);
 }
 
 fn scalar_macro_from_scalar() {
-    let original = crate::Scalar!(7.5);
-    let copy = crate::Scalar!(original);
+    let original = Scalar!(7.5);
+    let copy = Scalar!(original);
     assert_eq!(copy.value_f64(), 7.5);
 }
 
@@ -128,43 +128,43 @@ fn scalar_define() {
 }
 
 fn scalar_arithmetic_add() {
-    let a = crate::Scalar!(2.0);
-    let b = crate::Scalar!(3.0);
+    let a = Scalar!(2.0);
+    let b = Scalar!(3.0);
     let result = &a + &b;
     assert_eq!(result.value_f64(), 5.0);
 }
 
 fn scalar_arithmetic_subtract() {
-    let a = crate::Scalar!(5.0);
-    let b = crate::Scalar!(2.0);
+    let a = Scalar!(5.0);
+    let b = Scalar!(2.0);
     let result = &a - &b;
     assert_eq!(result.value_f64(), 3.0);
 }
 
 fn scalar_arithmetic_multiply() {
-    let a = crate::Scalar!(4.0);
-    let b = crate::Scalar!(3.0);
+    let a = Scalar!(4.0);
+    let b = Scalar!(3.0);
     let result = &a * &b;
     assert_eq!(result.value_f64(), 12.0);
 }
 
 fn scalar_arithmetic_divide() {
-    let a = crate::Scalar!(10.0);
-    let b = crate::Scalar!(2.0);
+    let a = Scalar!(10.0);
+    let b = Scalar!(2.0);
     let result = &a / &b;
     assert_eq!(result.value_f64(), 5.0);
 }
 
 fn scalar_arithmetic_chain() {
-    let a = crate::Scalar!(2.0);
-    let b = crate::Scalar!(3.0);
-    let c = crate::Scalar!(4.0);
+    let a = Scalar!(2.0);
+    let b = Scalar!(3.0);
+    let c = Scalar!(4.0);
     let result = &(&a + &b) * &c;
     assert_eq!(result.value_f64(), 20.0); // (2 + 3) * 4 = 20
 }
 
 fn scalar_negation() {
-    let a = crate::Scalar!(5.0);
+    let a = Scalar!(5.0);
     let result = -&a;
     assert_eq!(result.value_f64(), -5.0);
 }
@@ -176,17 +176,17 @@ fn scalar_rational_creation() {
 }
 
 fn scalar_zero_and_negative() {
-    let zero = crate::Scalar!(0.0);
-    let negative = crate::Scalar!(-42.5);
+    let zero = Scalar!(0.0);
+    let negative = Scalar!(-42.5);
 
     assert_eq!(zero.value_f64(), 0.0);
     assert_eq!(negative.value_f64(), -42.5);
 }
 
 fn scalar_arithmetic_complex_chain() {
-    let a = crate::Scalar!(10.0);
-    let b = crate::Scalar!(5.0);
-    let c = crate::Scalar!(2.0);
+    let a = Scalar!(10.0);
+    let b = Scalar!(5.0);
+    let c = Scalar!(2.0);
 
     // ((a / b) + c) * c = ((10/5) + 2) * 2 = (2 + 2) * 2 = 8
     let result = &(&(&a / &b) + &c) * &c;
